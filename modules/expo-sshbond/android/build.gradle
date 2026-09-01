@@ -1,0 +1,30 @@
+apply plugin: 'com.android.library'
+
+group = 'com.sshbond'
+version = '0.1.0'
+
+def expoModulesCorePlugin = new File(
+  project(":expo-modules-core").projectDir.absolutePath,
+  "ExpoModulesCorePlugin.gradle"
+)
+apply from: expoModulesCorePlugin
+applyKotlinExpoModulesCorePlugin()
+useCoreDependencies()
+useDefaultAndroidSdkVersions()
+useExpoPublishing()
+
+android {
+  namespace "expo.modules.sshbond"
+  defaultConfig {
+    versionCode 1
+    versionName "0.1.0"
+  }
+}
+
+dependencies {
+  // The original com.jcraft:jsch was abandoned in 2018 and lacks Ed25519,
+  // curve25519-sha256 and rsa-sha2-*, so it cannot authenticate against a
+  // modern OpenSSH server at all. mwiede's fork is the maintained continuation
+  // and carries those algorithms.
+  implementation 'com.github.mwiede:jsch:2.28.7'
+}

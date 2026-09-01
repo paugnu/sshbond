@@ -1,0 +1,7 @@
+{
+  "name": "expo-sshbond",
+  "version": "0.1.0",
+  "description": "Native SSH transport for SSHBond (Android: JSch + BouncyCastle)",
+  "main": "index.ts",
+  "private": true
+}

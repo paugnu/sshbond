@@ -1,0 +1,10 @@
+{
+  "platforms": ["android", "apple"],
+  "android": {
+    "modules": ["expo.modules.sshbond.SSHBondModule"]
+  },
+  "apple": {
+    "modules": ["SSHBondModule"],
+    "podspecPath": "ios/ExpoSSHBond.podspec"
+  }
+}
