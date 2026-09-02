@@ -23,6 +23,16 @@ final class SSHBondSession {
     static let hostKeyDecisionTimeout: TimeInterval = 300
     /// How long the loop parks on the socket before servicing the queues.
     static let pollIntervalMs: Int32 = 100
+    /**
+     * libssh2's own defaults, restated.
+     *
+     * `LIBSSH2_CHANNEL_WINDOW_DEFAULT` is `(2*1024*1024)` -- a macro holding an
+     * expression, which Swift does not import at all -- and
+     * `LIBSSH2_CHANNEL_PACKET_DEFAULT` imports as Int32 where the C prototype
+     * asks for an unsigned int.
+     */
+    static let channelWindowSize: UInt32 = 2 * 1024 * 1024
+    static let channelPacketSize: UInt32 = 32768
   }
 
   /// libssh2 has process-wide state that has to be set up exactly once.
@@ -231,13 +241,31 @@ final class SSHBondSession {
       guard let privateKey = params.privateKey else {
         throw SSHBondError.message("Key authentication was requested without a private key.")
       }
-      let result = libssh2_userauth_publickey_frommemory(
-        session,
-        params.username, params.username.utf8.count,
-        nil, 0,
-        privateKey, privateKey.utf8.count,
-        params.passphrase
-      )
+      let username = params.username
+      let result: Int32
+
+      if let passphrase = params.passphrase {
+        result = passphrase.withCString { passphrasePointer in
+          libssh2_userauth_publickey_frommemory(
+            session,
+            username, username.utf8.count,
+            nil, 0,
+            privateKey, privateKey.utf8.count,
+            passphrasePointer
+          )
+        }
+      } else {
+        // NULL and an empty string mean different things to libssh2: the second
+        // would have it try to decrypt an unencrypted key.
+        result = libssh2_userauth_publickey_frommemory(
+          session,
+          username, username.utf8.count,
+          nil, 0,
+          privateKey, privateKey.utf8.count,
+          nil
+        )
+      }
+
       guard result == 0 else {
         throw SSHBondError.message("Authentication failed: \(lastError(session))")
       }
@@ -258,7 +286,7 @@ final class SSHBondSession {
   private func openChannel(_ session: OpaquePointer) throws -> OpaquePointer {
     guard let channel = libssh2_channel_open_ex(
       session, "session", 7,
-      LIBSSH2_CHANNEL_WINDOW_DEFAULT, LIBSSH2_CHANNEL_PACKET_DEFAULT,
+      Constants.channelWindowSize, Constants.channelPacketSize,
       nil, 0
     ) else {
       throw SSHBondError.message("Could not open a session channel: \(lastError(session))")
@@ -335,7 +363,7 @@ final class SSHBondSession {
       if !readAny {
         // Nothing was waiting: sleep on the socket rather than spinning.
         var fds = pollfd(fd: socketFd, events: Int16(POLLIN), revents: 0)
-        poll(&fds, 1, Constants.pollIntervalMs)
+        poll(&fds, nfds_t(1), Constants.pollIntervalMs)
 
         if params.keepAliveIntervalSeconds > 0 {
           var secondsToNext: Int32 = 0
@@ -357,8 +385,10 @@ final class SSHBondSession {
   private func drain(channel: OpaquePointer, streamId: Int32, buffer: inout [Int8]) -> Bool {
     var received = false
 
+    let capacity = buffer.count
+
     while true {
-      let count = libssh2_channel_read_ex(channel, streamId, &buffer, buffer.count)
+      let count = libssh2_channel_read_ex(channel, streamId, &buffer, capacity)
 
       if count == Int(LIBSSH2_ERROR_EAGAIN) || count == 0 { return received }
       if count < 0 {
@@ -391,7 +421,7 @@ final class SSHBondSession {
 
       if written == Int(LIBSSH2_ERROR_EAGAIN) {
         var fds = pollfd(fd: socketFd, events: Int16(POLLOUT), revents: 0)
-        poll(&fds, 1, Constants.pollIntervalMs)
+        poll(&fds, nfds_t(1), Constants.pollIntervalMs)
         continue
       }
 
@@ -456,8 +486,12 @@ final class SSHBondSession {
     lock.unlock()
 
     // Unblock a handshake still waiting on a decision that will never come.
-    if !hostKeyAnswered {
-      hostKeyAnswered = true
+    lock.lock()
+    let needsUnblocking = !hostKeyAnswered
+    hostKeyAnswered = true
+    lock.unlock()
+
+    if needsUnblocking {
       hostKeyDecided.signal()
     }
 
@@ -546,7 +580,7 @@ final class SSHBondSession {
 
       if !connected && errno == EINPROGRESS {
         var fds = pollfd(fd: fd, events: Int16(POLLOUT), revents: 0)
-        if poll(&fds, 1, Int32(timeoutMs)) > 0 {
+        if poll(&fds, nfds_t(1), Int32(timeoutMs)) > 0 {
           var socketError: Int32 = 0
           var size = socklen_t(MemoryLayout<Int32>.size)
           getsockopt(fd, SOL_SOCKET, SO_ERROR, &socketError, &size)

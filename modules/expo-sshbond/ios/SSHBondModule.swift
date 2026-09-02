@@ -213,11 +213,7 @@ public final class SSHBondModule: Module {
    * exceptional and must not kill the session thread.
    */
   fileprivate func emit(_ name: String, _ body: [String: Any?]) {
-    do {
-      try sendEvent(name, body as [String: Any])
-    } catch {
-      // The React context is going away; nothing left to notify.
-    }
+    sendEvent(name, body)
   }
 
   fileprivate func forget(_ sessionId: String) {
