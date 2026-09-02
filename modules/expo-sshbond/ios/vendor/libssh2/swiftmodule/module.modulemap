@@ -1,0 +1,17 @@
+// Makes libssh2 importable from Swift as `Libssh2`.
+//
+// This map lives in a directory of its own, reachable through
+// SWIFT_INCLUDE_PATHS and nothing else. Left next to the headers it would also
+// sit on HEADER_SEARCH_PATHS, where clang looks for module maps when compiling
+// the C sources -- it would then turn their plain #include of a libssh2 header
+// into an import of this module, and the declarations would arrive both
+// textually and modularly in the same translation unit. That is what the
+// "typedef redefinition with different types" errors were.
+//
+// Only libssh2.h is listed: it is the whole API the Swift engine calls, and
+// naming the SFTP and public-key headers here would drag them into the module
+// for no reason.
+module Libssh2 {
+  header "../include/libssh2.h"
+  export *
+}

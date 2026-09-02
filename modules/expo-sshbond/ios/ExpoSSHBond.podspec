@@ -50,7 +50,7 @@ Pod::Spec.new do |s|
   s.private_header_files = 'vendor/libssh2/include/*.h',
                            'vendor/libssh2/src/*.h',
                            'vendor/libssh2/libssh2_config.h'
-  s.preserve_paths      = 'vendor/libssh2/module.modulemap',
+  s.preserve_paths      = 'vendor/libssh2/swiftmodule/module.modulemap',
                           'vendor/libssh2/src/agent_win.c',
                           'vendor/libssh2/src/blowfish.c',
                           'vendor/libssh2/src/openssl.c'
@@ -67,7 +67,9 @@ Pod::Spec.new do |s|
       '"${PODS_TARGET_SRCROOT}/vendor/libssh2/include"',
       '"${PODS_TARGET_SRCROOT}/vendor/libssh2/src"',
     ].join(' '),
-    # Where `import Libssh2` finds its module map.
-    'SWIFT_INCLUDE_PATHS' => '"${PODS_TARGET_SRCROOT}/vendor/libssh2"',
+    # Where `import Libssh2` finds its module map. Deliberately a directory
+    # that is not on HEADER_SEARCH_PATHS: clang picks up module maps from there
+    # too, and would modularise the headers for the C sources as well.
+    'SWIFT_INCLUDE_PATHS' => '"${PODS_TARGET_SRCROOT}/vendor/libssh2/swiftmodule"',
   }
 end
