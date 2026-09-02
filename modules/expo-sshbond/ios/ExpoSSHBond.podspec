@@ -42,9 +42,14 @@ Pod::Spec.new do |s|
                     'vendor/libssh2/src/blowfish.c',
                     'vendor/libssh2/src/openssl.c'
 
-  # Only libssh2.h and friends are API; everything under src/ is internal and
-  # would collide with other pods if it were public.
-  s.public_header_files = 'vendor/libssh2/include/*.h'
+  # Every vendored header is private. CocoaPods treats unlisted headers as
+  # public and folds them into this pod's umbrella module, which would then
+  # claim the same declarations as the hand-written Libssh2 module map -- and a
+  # header compiled into two clang modules is a redefinition of everything it
+  # declares. Swift reaches libssh2 through the module map alone.
+  s.private_header_files = 'vendor/libssh2/include/*.h',
+                           'vendor/libssh2/src/*.h',
+                           'vendor/libssh2/libssh2_config.h'
   s.preserve_paths      = 'vendor/libssh2/module.modulemap',
                           'vendor/libssh2/src/agent_win.c',
                           'vendor/libssh2/src/blowfish.c',
