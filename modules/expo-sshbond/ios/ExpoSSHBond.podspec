@@ -32,10 +32,23 @@ Pod::Spec.new do |s|
                    'vendor/libssh2/include/*.h',
                    'vendor/libssh2/libssh2_config.h'
 
+  # libssh2 is partly an amalgamation: crypto.c #includes the backend it was
+  # configured with, bcrypt_pbkdf.c #includes blowfish.c, and agent.c #includes
+  # agent_win.c, which guards itself out on anything but Windows. Upstream's
+  # src/Makefile.inc lists 26 translation units and leaves these three out;
+  # compiling them a second time on their own would duplicate every symbol they
+  # define. They stay on disk because the #include directives need them.
+  s.exclude_files = 'vendor/libssh2/src/agent_win.c',
+                    'vendor/libssh2/src/blowfish.c',
+                    'vendor/libssh2/src/openssl.c'
+
   # Only libssh2.h and friends are API; everything under src/ is internal and
   # would collide with other pods if it were public.
   s.public_header_files = 'vendor/libssh2/include/*.h'
-  s.preserve_paths      = 'vendor/libssh2/module.modulemap'
+  s.preserve_paths      = 'vendor/libssh2/module.modulemap',
+                          'vendor/libssh2/src/agent_win.c',
+                          'vendor/libssh2/src/blowfish.c',
+                          'vendor/libssh2/src/openssl.c'
 
   # HAVE_CONFIG_H makes libssh2_setup.h read the hand-written
   # vendor/libssh2/libssh2_config.h; LIBSSH2_OPENSSL selects the backend.
