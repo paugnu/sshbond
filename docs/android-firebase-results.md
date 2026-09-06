@@ -32,7 +32,21 @@ Hermes Android/iOS han pasado tras los cambios.
 
 Los originales `1.png` (Hosts) y `2.png` (Settings), 1080×2340, se descargaron
 sin editar de los artefactos de Firebase y se guardaron en la ficha de Play.
-Google marca la ficha como «Lista para enviar a revisión»; el panel indica
-10 de 11 tareas iniciales completadas. Falta IARC, pendiente de la autorización
-solicitada para sus términos. Las capturas muestran la build 4; reevaluarlas si
+IARC completado con autorización del titular: PEGI 3. Declaración de ID de
+publicidad guardada como «No» tras comprobar la ausencia del permiso AD_ID.
+La ficha en español, inglés y francés y la build 4 del canal cerrado Alpha
+se enviaron a Google el 6 de septiembre; estado verificado «Cambios en revisión».
+El canal está limitado a la cuenta del titular. No se envió una versión de
+producción. Las capturas muestran la build 4; reevaluarlas si
 cambia sustancialmente el aspecto en la build siguiente. No se usan para iOS.
+
+## Nueva compilación
+
+EAS completó Android 1.0.0 (5), compilada desde `b8f25a5`, con las primeras
+correcciones y el visor de licencias. AAB descargado y comprobado: ZIP íntegro,
+sin permiso AD_ID y segmentos ELF de las bibliotecas de 64 bits alineados a
+16 KB o más. Estas comprobaciones no sustituyen una ejecución en dispositivo.
+
+SHA-256: `b658ead6b8b10a098b2d70a9b88f356b95f7e3d801552bf1fcbda12a1ed1487e`.
+
+La build 5 no se ha enviado al canal cerrado ni ejecutado en Firebase todavía.

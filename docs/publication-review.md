@@ -94,8 +94,11 @@ de vulnerabilidades. El audit npm no cubre dependencias Kotlin/C/Swift.
   destacado subidos. Herramientas, soporte HTTPS y email configurados; sin
   anuncios, funciones financieras, de salud ni carácter gubernamental.
   Acceso de revisión, audiencia 13+ y declaración sin recogida/cesión de datos
-  guardados. Dos capturas auténticas del Pixel 5 añadidas; ficha lista para enviar
-  a revisión, 10/11 tareas iniciales completadas. Pendiente IARC/aceptación de términos.
+  guardados. Dos capturas auténticas del Pixel 5 añadidas. IARC autorizado y
+  completado (PEGI 3); declaración AD_ID «No» guardada. Las tres fichas y
+  la build 4 del canal cerrado Alpha enviadas el 6 de septiembre: estado
+  verificado «Cambios en revisión». Solo la cuenta del titular es tester;
+  no se ha enviado una versión de producción.
 - Demo de revisión aislada en el VPS del titular, separada de YogaBond:
   contenedor de solo lectura, usuario no privilegiado, límites de recursos,
   sin volúmenes de producción y sin conexiones salientes. Contraseña, clave,
@@ -106,13 +109,14 @@ de vulnerabilidades. El audit npm no cubre dependencias Kotlin/C/Swift.
   terminó correctamente en un Pixel 5 API 30: 89 acciones, 24 pantallas,
   5 min 12 s. Detectó 34 avisos de accesibilidad; primeras correcciones locales
   verificadas con TypeScript/lint/Jest y exportaciones Hermes, pendientes de
-  nueva build y revalidación nativa. Ver android-firebase-results.md.
+  revalidación nativa con la build 5. Ver android-firebase-results.md.
 - Gratuidad autorizada por el titular: Play confirmado «Sin coste»; Apple
   configurado y verificado a 0 EUR, territorio base España. Disponibilidad
   inicial de España y Francia guardada y verificada en ambas tiendas.
 - Build Android 1.0.0 (5) enviada a EAS desde b8f25a5:
   https://expo.dev/accounts/paugnu/projects/sshbond/builds/9f717f03-296e-4df7-b2ba-cbc611a1a99d
-  Pendiente de terminar y revalidar en dispositivo; la build 4 sigue en Play.
+  EAS confirmó FINISHED. Pendiente de revalidar en dispositivo; la build 4
+  sigue en pruebas internas y en revisión para el canal cerrado de Play.
 - Visor de licencias sin conexión añadido. Inventario y omisiones documentados
   en third-party/README.md; no se considera cerrada la auditoría nativa.
 
@@ -121,7 +125,7 @@ de vulnerabilidades. El audit npm no cubre dependencias Kotlin/C/Swift.
 1. Completar la [prueba en dispositivo](real-device-testing.md): interfaz,
    Keychain/Keystore, biometría, teclado, segundo plano, cambio de red y conexión
    real desde cada plataforma. La prueba JVM no ejecuta ART ni Swift.
-2. Completar IARC tras aceptar sus términos; añadir capturas auténticas de
+2. Añadir capturas auténticas de
    iPhone/iPad cuando se pueda ejecutar iOS. Mantener disponible la demo aislada
    mientras las tiendas revisan la app. Data safety, datos de revisión y la ficha
    de Play con capturas Android ya están guardados.
@@ -131,4 +135,4 @@ de vulnerabilidades. El audit npm no cubre dependencias Kotlin/C/Swift.
    antes de distribuir allí. No excluir Francia para eludir ese trámite.
 4. Cerrar las omisiones del inventario de atribuciones y comprobar las licencias
    de las dependencias nativas finales. Precio gratuito y España/Francia ya
-   configurados. La distribución actual sigue siendo de pruebas internas.
+   configurados. Pruebas internas activas y beta cerrada en revisión.
