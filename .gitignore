@@ -13,3 +13,7 @@ modules/*/android/build/
 
 .DS_Store
 test/.integration-tmp.*/
+
+# Local publication dossiers and QA intermediates can contain private data.
+/output/
+/tmp/

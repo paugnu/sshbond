@@ -42,6 +42,7 @@ correcta con esa validación ni enviarse a producción sin completarla.
   com.sshbond.client, SDK iphoneos26.0, mínimo iOS 15.1, declaración de cifrado
   activada y permiso de red local. Clase nativa SSHBondSession presente.
 - No se ha descargado el SDK de Android localmente. Builds nativas en EAS.
+- CI GitHub Actions 34040022612: completada correctamente para e5a1359.
 
 ## Dependencias npm
 
@@ -68,10 +69,22 @@ de vulnerabilidades. El audit npm no cubre dependencias Kotlin/C/Swift.
 
 - Google Play: app 4974393873539602018, com.sshbond.client, creada en la cuenta
   existente. Declaraciones de políticas/exportación autorizadas por el titular.
-  Prueba interna en preparación; tester paugnu@gmail.com.
+  Prueba interna 1.0.0 (4) activa y disponible desde las 16:57 CEST;
+  tester paugnu@gmail.com. Google validó min API 24 / target 36.
+  SHA-256 del AAB: 827b304d322140893d23db640e20048e2a35d9fd33f651d463f370277f120f62.
+  ZIP íntegro, módulo SSH en DEX y 88 bibliotecas nativas; ningún segmento LOAD
+  de bibliotecas de 64 bits con alineación inferior a 16 KB. Única advertencia
+  Play: archivo de desofuscación no adjunto. No hay errores bloqueantes.
 - Apple: app 6809179913, mismo bundle ID, equipo W543Q9Q8K5. Perfil de firma
-  propio y certificado existente; clave API de EAS asociada. iOS build 7 enviado
-  correctamente por EAS Submit aaf710cd-ac81-43ac-9f39-85c81169bd9b.
+  propio y certificado existente; clave API de EAS asociada. EAS Submit
+  aaf710cd-ac81-43ac-9f39-85c81169bd9b completó la transferencia del build 7,
+  pero Apple lo rechazó después con ITMS-90592: falta el código de conformidad
+  de cifrado correspondiente. No está disponible en TestFlight.
+- Francia incluida por decisión explícita del titular. El cuestionario Apple
+  exige el documento francés para algoritmos estándar fuera del sistema.
+  Primer expediente ANSSI y formulario XFA preparados localmente; no enviados
+  ni firmados. Después de obtener el documento y la aprobación de Apple,
+  incorporar su código al IPA y compilar/subir una nueva versión.
 - Privacidad pública: https://github.com/paugnu/sshbond/blob/main/docs/privacy.md
 - Soporte público: https://github.com/paugnu/sshbond/blob/main/docs/support.md
 - App Privacy «Data Not Collected» publicado con autorización explícita.
@@ -86,6 +99,7 @@ de vulnerabilidades. El audit npm no cubre dependencias Kotlin/C/Swift.
    desechables de revisión, sin exponer sistemas personales.
 3. Resolver exportación de cifrado según mercados. La app incluye algoritmos
    estándar fuera de las APIs del sistema; no se ha marcado falsamente como
-   exenta. Francia puede exigir declaración específica antes de distribuir allí.
+   exenta. Francia requiere resolver la documentación solicitada por Apple
+   antes de distribuir allí. No excluir Francia para eludir ese trámite.
 4. Revisar atribuciones y licencias de todas las bibliotecas distribuidas, precio
    y países definitivos. La distribución actual prevista es de pruebas internas.

@@ -3,8 +3,11 @@
 Validación local del 6 de septiembre de 2026: **68 comprobaciones de SSH real
 aprobadas en 13 escenarios**, **159 pruebas Jest aprobadas en 14 suites**, sin
 errores de TypeScript/lint y exportaciones JavaScript/Hermes Android e iOS
-correctas. Los cambios Swift no se han compilado ni ejecutado en este entorno
-Linux; no hay todavía una validación de AAB/IPA o dispositivo en esta revisión.
+correctas. Swift/libssh2 han compilado en EAS para iOS (IPA 1.0.0 build 7),
+pero Apple ha rechazado el procesamiento por ITMS-90592 (cifrado). Android
+1.0.0 (4) está disponible en la prueba interna de Google Play; AAB validado
+por Play, incluido target SDK 36. No se ha probado todavía la app instalada
+en un dispositivo. Compilar y examinar artefactos no sustituye esa prueba.
 
 ## Integración real y reproducible
 
@@ -40,8 +43,9 @@ No importar claves de producción. Para pruebas por LAN, el servidor debe ser
 accesible desde el móvil y restringirse al dispositivo o a la red de pruebas;
 el contenedor de integración anterior no es un servidor público para móviles.
 
-1. Generar una build nativa con el perfil `preview` de EAS para Android o una
-   build iOS provisionada para el iPhone. Expo Go no sirve para esta validación.
+1. Instalar Android 1.0.0 (4) desde la prueba interna de Google Play usando
+   la cuenta autorizada. En iOS, esperar la resolución del cifrado y un build
+   aceptado en TestFlight. Expo Go no sirve para esta validación.
 2. Verificar que se muestra y funciona el motor real. Una build sin él debe
    fallar claramente, sin iniciar una sesión simulada.
 3. Crear una clave dentro de la app, autorizar su parte pública en el servidor
@@ -67,7 +71,8 @@ el contenedor de integración anterior no es un servidor público para móviles.
 Registrar modelo de móvil, versión del sistema, identificador de build, resultado
 y pasos de cualquier fallo. No adjuntar claves privadas, contraseñas ni salida de
 servidores de producción. La publicación debe esperar a esta validación nativa,
-en especial para los cambios Swift, que requieren Xcode/macOS para compilarse.
+en especial para el motor Swift: compilado en EAS, pero todavía no ejecutado
+en un dispositivo durante esta revisión.
 
 ## Regresión de seguridad de libssh2
 
