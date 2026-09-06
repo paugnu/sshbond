@@ -1,0 +1,23 @@
+name: Verify SSHBond
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run verify
+  real-ssh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f modules/expo-sshbond/integration/Dockerfile -t sshbond-integration .
+      - run: docker run --rm sshbond-integration
+      - run: docker run --rm sshbond-integration bash modules/expo-sshbond/integration/run-libssh2-security.sh

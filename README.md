@@ -3,12 +3,14 @@
 A local-first SSH client built on React Native + Expo, with an OpenSSH mental model:
 hosts are `~/.ssh/config` blocks, not proprietary profiles.
 
-- **Nothing leaves the device.** No accounts, no telemetry, no remote log sink. The
+- **No service account or telemetry.** SSH traffic goes to the servers you choose,
+  and configuration is shared only when you export it. The
   terminal emulator is bundled into the app rather than fetched from a CDN, so a
   session to a machine on your LAN works with no internet at all.
-- **Keys stay in hardware.** Private keys live in the iOS Keychain / Android
-  Keystore and can be gated behind Face ID or a fingerprint. They are never written
-  to a file, a log, or an export.
+- **Protected key storage.** Private keys are stored with the OS secure storage
+  APIs and can require Face ID or a fingerprint. They are read into app memory
+  to authenticate; they are not non-exportable hardware signing keys. The app
+  does not include them in configuration exports or write them to plain files.
 - **Host keys are verified.** `StrictHostKeyChecking` is honoured on every
   connection, and a changed host key is never accepted silently.
 
@@ -23,8 +25,8 @@ npm run android    # development build with the real SSH engine
 ```
 
 `npm start` (Expo Go) runs against the **simulator engine**: the whole app works,
-but no traffic reaches the network. Real SSH needs the development build, and is
-Android-only today — see below.
+but no traffic reaches the network. Real SSH needs a native build on Android or
+iOS — see below. Release builds refuse to connect if the native engine is missing.
 
 ### Verifying a change
 
@@ -58,11 +60,11 @@ are two implementations:
 |---|---|---|
 | `expo-sshbond` (Android) | An Android development build | Real SSH over [mwiede/jsch](https://github.com/mwiede/jsch): Ed25519, curve25519, ChaCha20-Poly1305, full PTY, `-L`/`-R`/`-D` forwarding, `ProxyJump` chains |
 | `expo-sshbond` (iOS) | An iOS development build | Real SSH over vendored [libssh2](https://libssh2.org) 1.11.1 on OpenSSL 3: Ed25519, curve25519, full PTY. Forwarding and `ProxyJump` are refused, not faked |
-| `MockSSHBridge` | Jest, web, Expo Go, and iOS | A simulator. It runs the full lifecycle, host key verification included, and says plainly in its banner that nothing is reaching the network |
+| `MockSSHBridge` | Jest and development environments without the native module | A simulator. It runs the full lifecycle, host key verification included, and says plainly in its banner that nothing is reaching the network. Disabled in production |
 
 ### Real SSH connections today
 
-**Only from a development build.** Expo Go cannot load a custom native module,
+**From development, preview or production native builds.** Expo Go cannot load a custom native module,
 so `npm start` alone always gives you the simulator, on either platform.
 
 ```bash
@@ -70,7 +72,7 @@ npm run android          # prebuild + compile + install a dev build
 npm run ios              # the same, on a machine with Xcode
 ```
 
-Android requires the Android SDK (platform 34, build-tools 34) and **JDK 17**.
+Android requires the Android SDK versions selected by Expo SDK 54 (API 36) and **JDK 17**.
 
 Without a Mac, an iOS development build is made in the cloud, which needs an
 Apple Developer Program membership for device provisioning:
@@ -92,6 +94,18 @@ against a real OpenSSH server:
 ```bash
 modules/expo-sshbond/integration/run.sh
 ```
+
+Or, with Docker and no local Java/Kotlin installation:
+
+```bash
+npm run test:ssh:docker
+```
+
+This compiles the actual Android engine and connects it to OpenSSH on the
+container's loopback interface. No ports are published. Test keys are generated
+for each run and removed afterwards. Compilation errors fail the run; it cannot
+reuse an old engine jar. See [real-device testing](docs/real-device-testing.md)
+for what still needs to be tested in the installed app.
 
 It starts a throwaway `sshd`, authenticates with a key produced by SSHBond's own
 key manager, and asserts on the events the engine emits — including that the

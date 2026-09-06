@@ -6,6 +6,7 @@ import {
 import { parseDestination, ParsedDestination } from '@/utils/connectionString';
 import { SSHConfigResolver } from './config/SSHConfigResolver';
 import { HostStorageService } from '../persistence/HostStorageService';
+import { assertSupportedConfig } from './supportedConfig';
 
 /**
  * One machine to log into on the way to the target, in the order it is
@@ -117,6 +118,7 @@ export class SSHProxyJump {
   ): ProxyJumpHop {
     const saved = savedHosts.find(host => host.alias === spec.hostname);
     const resolved = saved ? SSHConfigResolver.resolveFromHostModels(saved, savedHosts) : undefined;
+    if (resolved) assertSupportedConfig(resolved);
 
     // What the directive states wins over the saved host, as in OpenSSH.
     const hostname = resolved?.hostname || spec.hostname;

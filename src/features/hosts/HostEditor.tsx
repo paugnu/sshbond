@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Switch,
   Alert,
+  Platform,
 } from 'react-native';
 import { SSHHost, SSHIdentity, SSHGroup, SSHAuthType } from '@/domain/models/sshConfig';
 import { useTheme } from '../../theme/ThemeContext';
@@ -468,7 +469,7 @@ export const HostEditor: React.FC<HostEditorProps> = ({
               <TouchableOpacity style={styles.accordionHeader} onPress={() => toggleSection('jumpHost')}>
                 <View style={styles.accordionTitleRow}>
                   <GitBranch size={16} color={colors.text} />
-                  <Text style={[styles.accordionTitle, { color: colors.text }]}>Jump Host / ProxyJump</Text>
+                  <Text style={[styles.accordionTitle, { color: colors.text }]}>Jump Host / ProxyJump{Platform.OS === 'ios' ? ' (Android only)' : ''}</Text>
                 </View>
                 {expandedSections.jumpHost ? <ChevronDown size={18} color={colors.textMuted} /> : <ChevronRight size={18} color={colors.textMuted} />}
               </TouchableOpacity>
@@ -486,6 +487,7 @@ export const HostEditor: React.FC<HostEditorProps> = ({
                     autoCorrect={false}
                   />
                   <Text style={[styles.hint, { color: colors.textSubtle, marginTop: 8 }]}>
+                    {Platform.OS === 'ios' ? 'ProxyJump is not available on iOS. Hosts that require a jump host cannot connect here. ' : ''}
                     A hop naming a saved host uses that host&apos;s user, port and key; anything
                     else needs a user, as in jump@gateway. Each machine in the chain is asked
                     about and trusted separately, and none is authenticated before its host key
@@ -541,7 +543,7 @@ export const HostEditor: React.FC<HostEditorProps> = ({
               <TouchableOpacity style={styles.accordionHeader} onPress={() => toggleSection('portForward')}>
                 <View style={styles.accordionTitleRow}>
                   <Share2 size={16} color={colors.text} />
-                  <Text style={[styles.accordionTitle, { color: colors.text }]}>Port Forwarding (-L / -R / -D)</Text>
+                  <Text style={[styles.accordionTitle, { color: colors.text }]}>Port Forwarding (-L / -R / -D){Platform.OS === 'ios' ? ' (Android only)' : ''}</Text>
                 </View>
                 {expandedSections.portForward ? <ChevronDown size={18} color={colors.textMuted} /> : <ChevronRight size={18} color={colors.textMuted} />}
               </TouchableOpacity>
@@ -656,6 +658,7 @@ export const HostEditor: React.FC<HostEditorProps> = ({
                   ))}
 
                   <Text style={[styles.hint, { color: colors.textSubtle, marginTop: 10 }]}>
+                    {Platform.OS === 'ios' ? 'Port forwarding is not available on iOS. These settings are retained for configuration export. ' : ''}
                     A forward that cannot be established is reported on the session rather than
                     taking it down, as with ssh itself. Bind to 127.0.0.1 unless you mean to expose
                     the port to your whole network.
@@ -682,8 +685,8 @@ export const HostEditor: React.FC<HostEditorProps> = ({
                   </View>
 
                   <View style={styles.switchRow}>
-                    <Text style={[styles.switchLabel, { color: colors.text }]}>ForwardAgent</Text>
-                    <Switch value={forwardAgent} onValueChange={setForwardAgent} />
+                    <Text style={[styles.switchLabel, { color: colors.text }]}>ForwardAgent (not supported)</Text>
+                    <Switch value={forwardAgent} disabled={!forwardAgent} onValueChange={setForwardAgent} />
                   </View>
 
                   <Text style={[styles.label, { color: colors.textMuted, marginTop: 8 }]}>

@@ -30,9 +30,30 @@
         "simulator": true,
         "resourceClass": "m-medium"
       }
+    },
+    "testing": {
+      "extends": "production",
+      "distribution": "store",
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {
+        "simulator": false,
+        "image": "macos-sequoia-15.6-xcode-26.0"
+      }
     }
   },
   "submit": {
-    "production": {}
+    "production": {},
+    "testing": {
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft"
+      },
+      "ios": {
+        "appleTeamId": "W543Q9Q8K5",
+        "ascAppId": "6809179913"
+      }
+    }
   }
 }

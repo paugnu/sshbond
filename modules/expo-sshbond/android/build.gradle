@@ -27,4 +27,6 @@ dependencies {
   // modern OpenSSH server at all. mwiede's fork is the maintained continuation
   // and carries those algorithms.
   implementation 'com.github.mwiede:jsch:2.28.7'
+  // Android needs the lightweight provider for Ed25519 and Curve25519.
+  implementation 'org.bouncycastle:bcprov-jdk18on:1.85.2'
 }

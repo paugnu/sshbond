@@ -15,7 +15,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.sshbond.client",
       "infoPlist": {
-        "NSFaceIDUsageDescription": "SSHBond uses Face ID to securely authenticate and protect your private SSH keys."
+        "NSFaceIDUsageDescription": "SSHBond uses Face ID to securely authenticate and protect your private SSH keys.",
+        "NSLocalNetworkUsageDescription": "SSHBond connects to SSH servers on your local network when you choose a local server.",
+        "ITSAppUsesNonExemptEncryption": true
       }
     },
     "android": {
@@ -26,10 +28,14 @@
       "package": "com.sshbond.client",
       "permissions": [
         "USE_BIOMETRIC",
-        "USE_FINGERPRINT",
-        "android.permission.USE_BIOMETRIC",
-        "android.permission.USE_FINGERPRINT"
-      ]
+        "USE_FINGERPRINT"
+      ],
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
+      "allowBackup": false
     },
     "web": {
       "favicon": "./assets/favicon.png"

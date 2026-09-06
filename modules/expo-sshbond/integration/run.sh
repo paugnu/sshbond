@@ -20,8 +20,9 @@ set -euo pipefail
 
 MODULE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PROJECT_ROOT="$(cd "$MODULE_DIR/../.." && pwd)"
-WORK_DIR="${TMPDIR:-/tmp}/sshbond-engine-it"
+WORK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/sshbond-engine-it.XXXXXX")"
 JSCH_VERSION="2.28.7"
+BC_VERSION="1.85.2"
 
 RED=$'\e[31m'; GREEN=$'\e[32m'; DIM=$'\e[2m'; RESET=$'\e[0m'
 
@@ -35,15 +36,19 @@ done
 SSHD_BIN="$(command -v sshd || echo /usr/sbin/sshd)"
 [ -x "$SSHD_BIN" ] || die "sshd is required but was not found"
 
-mkdir -p "$WORK_DIR"
 SSHD_DIR="$WORK_DIR/sshd"
-rm -rf "$SSHD_DIR"
 mkdir -p "$SSHD_DIR"
+chmod 700 "$WORK_DIR"
+GEN_TEST_DIR=""
+SSHD_PID=""
 
 cleanup() {
-  if [ -f "$SSHD_DIR/sshd.pid" ]; then
-    kill "$(cat "$SSHD_DIR/sshd.pid")" 2>/dev/null || true
+  if [ -n "$SSHD_PID" ]; then
+    kill "$SSHD_PID" 2>/dev/null || true
+    wait "$SSHD_PID" 2>/dev/null || true
   fi
+  if [ -n "$GEN_TEST_DIR" ]; then rm -rf "$GEN_TEST_DIR"; fi
+  rm -rf "$WORK_DIR"
 }
 trap cleanup EXIT
 
@@ -51,9 +56,13 @@ trap cleanup EXIT
 JSCH_JAR="$WORK_DIR/jsch-$JSCH_VERSION.jar"
 if [ ! -f "$JSCH_JAR" ]; then
   log "downloading jsch $JSCH_VERSION"
-  curl -sSL -o "$JSCH_JAR" \
-    "https://repo1.maven.org/maven2/com/github/mwiede/jsch/$JSCH_VERSION/jsch-$JSCH_VERSION.jar"
+  curl -fsSL --retry 3 -o "$JSCH_JAR" \
+    "https://repo.maven.apache.org/maven2/com/github/mwiede/jsch/$JSCH_VERSION/jsch-$JSCH_VERSION.jar"
 fi
+
+BC_JAR="$WORK_DIR/bcprov-jdk18on-$BC_VERSION.jar"
+curl -fsSL --retry 3 -o "$BC_JAR" \
+  "https://repo.maven.apache.org/maven2/org/bouncycastle/bcprov-jdk18on/$BC_VERSION/bcprov-jdk18on-$BC_VERSION.jar"
 
 # --- keys -------------------------------------------------------------------
 log "generating server host key"
@@ -66,8 +75,7 @@ ssh-keygen -q -t ed25519 -N '' -f "$SSHD_DIR/bogus_key" -C 'not-authorized'
 # The client key comes from SSHBond's own generator, so the run also proves the
 # app produces keys OpenSSH actually accepts.
 log "generating the client key with SSHBond's key manager"
-GEN_TEST_DIR="$PROJECT_ROOT/test/.integration-tmp"
-mkdir -p "$GEN_TEST_DIR"
+GEN_TEST_DIR="$(mktemp -d "$PROJECT_ROOT/test/.integration-tmp.XXXXXX")"
 cat > "$GEN_TEST_DIR/generate.test.ts" <<'TS'
 import * as fs from 'fs';
 import { SSHKeyManager } from '../../src/services/ssh/keys/SSHKeyManager';
@@ -83,9 +91,13 @@ it('generates the client key used by the engine integration run', async () => {
   fs.writeFileSync(`${dir}/authorized_keys`, `${pair.publicKey}\n`, { mode: 0o600 });
 });
 TS
-(cd "$PROJECT_ROOT" && SSHD_DIR="$SSHD_DIR" npx jest "test/.integration-tmp/generate.test.ts" --silent >/dev/null 2>&1) \
+(cd "$PROJECT_ROOT" && SSHD_DIR="$SSHD_DIR" npx jest --runTestsByPath "$GEN_TEST_DIR/generate.test.ts" --runInBand --silent) \
   || die "could not generate the client key with SSHKeyManager"
 rm -rf "$GEN_TEST_DIR"
+
+log "encrypting a copy of the generated key for passphrase tests"
+cp "$SSHD_DIR/client_key" "$SSHD_DIR/client_key_encrypted"
+ssh-keygen -q -p -P '' -N 'sshbond-integration-only' -f "$SSHD_DIR/client_key_encrypted" >/dev/null
 
 # --- sshd -------------------------------------------------------------------
 cat > "$SSHD_DIR/sshd_config" <<EOF
@@ -109,8 +121,12 @@ EOF
 
 log "starting sshd on 127.0.0.1:2222"
 "$SSHD_BIN" -f "$SSHD_DIR/sshd_config" -E "$SSHD_DIR/sshd.log" -D &
+SSHD_PID=$!
 sleep 2
-grep -q "Server listening" "$SSHD_DIR/sshd.log" || die "sshd failed to start; see $SSHD_DIR/sshd.log"
+if ! kill -0 "$SSHD_PID" 2>/dev/null || ! grep -q "Server listening" "$SSHD_DIR/sshd.log"; then
+  cat "$SSHD_DIR/sshd.log"
+  die "sshd failed to start"
+fi
 
 # --- build ------------------------------------------------------------------
 log "compiling the engine"
@@ -118,11 +134,11 @@ kotlinc \
   "$MODULE_DIR/android/src/main/java/expo/modules/sshbond/SSHBondTypes.kt" \
   "$MODULE_DIR/android/src/main/java/expo/modules/sshbond/SSHBondSession.kt" \
   "$MODULE_DIR/android/src/main/java/expo/modules/sshbond/SSHPortForwards.kt" \
-  -classpath "$JSCH_JAR" -d "$WORK_DIR/engine.jar" 2>&1 | grep -v '^warning:' || true
+  -classpath "$JSCH_JAR" -d "$WORK_DIR/engine.jar"
 
 log "compiling the harness"
 kotlinc "$MODULE_DIR/integration/SSHBondSessionIntegrationTest.kt" \
-  -classpath "$JSCH_JAR:$WORK_DIR/engine.jar" -d "$WORK_DIR/harness.jar" 2>&1 | grep -v '^warning:' || true
+  -classpath "$JSCH_JAR:$WORK_DIR/engine.jar" -d "$WORK_DIR/harness.jar"
 
 KOTLIN_STDLIB="$(dirname "$(readlink -f "$(command -v kotlinc)")")/../lib/kotlin-stdlib.jar"
 
@@ -130,9 +146,12 @@ KOTLIN_STDLIB="$(dirname "$(readlink -f "$(command -v kotlinc)")")/../lib/kotlin
 FINGERPRINT="$(ssh-keygen -lf "$SSHD_DIR/host_ed25519.pub" | awk '{print $2}')"
 log "expected host key fingerprint: $FINGERPRINT"
 
-if java -cp "$WORK_DIR/harness.jar:$WORK_DIR/engine.jar:$JSCH_JAR:$KOTLIN_STDLIB" \
+# Disable multi-release selection so JSch exercises its lightweight crypto
+# implementations as on Android, instead of silently using Java 17 providers.
+if java -Djdk.util.jar.enableMultiRelease=false -cp "$WORK_DIR/harness.jar:$WORK_DIR/engine.jar:$JSCH_JAR:$BC_JAR:$KOTLIN_STDLIB" \
      SSHBondEngineIntegration "$SSHD_DIR" "$FINGERPRINT"; then
   echo "${GREEN}engine integration: OK${RESET}"
 else
-  die "engine integration failed (sshd log: $SSHD_DIR/sshd.log)"
+  cat "$SSHD_DIR/sshd.log"
+  die "engine integration failed"
 fi

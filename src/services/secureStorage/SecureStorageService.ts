@@ -74,7 +74,7 @@ export class SecureStorageService {
    * chunk: the keystore authorises a single read at a time, and there is no
    * way to ask it for a batch.
    */
-  public static async getSecret(key: string, promptReason = 'Authenticate to unlock SSH credentials'): Promise<string | null> {
+  public static async getSecret(key: string, promptReason = 'Authenticate to unlock SSH credentials', failOnError = false): Promise<string | null> {
     try {
       const options: SecureStore.SecureStoreOptions = {
         authenticationPrompt: promptReason,
@@ -104,6 +104,7 @@ export class SecureStorageService {
 
       return parts.join('');
     } catch (err) {
+      if (failOnError) throw err;
       console.warn(`[SecureStorage] Failed to retrieve secret: ${key}`, err);
       return null;
     }
@@ -157,7 +158,7 @@ export class SecureStorageService {
   public static async promptBiometrics(promptMessage = 'Unlock SSHBond'): Promise<boolean> {
     try {
       const isAvailable = await this.isBiometricAvailable();
-      if (!isAvailable) return true; // Fallback if no biometrics setup
+      if (!isAvailable) return false;
 
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage,

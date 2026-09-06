@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Switch, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Switch, Alert, Linking } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTheme } from '../../theme/ThemeContext';
 import { HostStorageService, AppSettings } from '../../services/persistence/HostStorageService';
 import { KnownHost } from '@/domain/models/sshConfig';
@@ -20,6 +21,7 @@ import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 
 export default function SettingsScreen() {
+  const router = useRouter();
   const { colors, themePreference, setThemePreference, terminalThemeName, setTerminalThemeName } = useTheme();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [showConfigModal, setShowConfigModal] = useState(false);
@@ -166,13 +168,17 @@ export default function SettingsScreen() {
             <View style={styles.settingLabelContainer}>
               <Text style={[styles.settingLabel, { color: colors.text }]}>Require Biometrics</Text>
               <Text style={[styles.settingSub, { color: colors.textMuted }]}>
-                Authenticate with Face ID / Fingerprint on app open
+                Authenticate when opening or returning to SSHBond
               </Text>
             </View>
             <Switch
               value={settings.requireBiometrics}
               onValueChange={async (val) => {
-                if (val && biometricAvailable) {
+                if (val && !biometricAvailable) {
+                  Alert.alert('Biometrics unavailable', 'Set up Face ID or fingerprints in your device settings first.');
+                  return;
+                }
+                if (val) {
                   const verified = await SecureStorageService.promptBiometrics('Confirm Biometrics');
                   if (verified) handleUpdate({ requireBiometrics: true });
                 } else {
@@ -367,7 +373,7 @@ export default function SettingsScreen() {
             <View style={styles.settingLabelContainer}>
               <Text style={[styles.settingLabel, { color: colors.text }]}>Copy Diagnostic Information</Text>
               <Text style={[styles.settingSub, { color: colors.textMuted }]}>
-                Sanitized logs and connection stats (no secrets)
+                App settings and counts (no secrets)
               </Text>
             </View>
             <Copy size={16} color={colors.textMuted} />
@@ -387,6 +393,18 @@ export default function SettingsScreen() {
 
           <View style={[styles.divider, { backgroundColor: colors.borderSubtle }]} />
 
+          <TouchableOpacity style={styles.clickableRow} onPress={() => router.push('/privacy')}>
+            <Text style={[styles.settingLabel, { color: colors.text }]}>Privacy Policy</Text>
+            <ChevronRight size={18} color={colors.textMuted} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.clickableRow} onPress={() => {
+            void Linking.openURL('mailto:info@yogabond.es?subject=SSHBond%20support').catch(() => {
+              Alert.alert('SSHBond Support', 'Email info@yogabond.es for help. Never send passwords or private keys.');
+            });
+          }}>
+            <Text style={[styles.settingLabel, { color: colors.text }]}>Support · info@yogabond.es</Text>
+            <ChevronRight size={18} color={colors.textMuted} />
+          </TouchableOpacity>
           <View style={styles.aboutRow}>
             <Text style={[styles.aboutTitle, { color: colors.text }]}>SSHBond — OpenSSH Client</Text>
             <Text style={[styles.aboutSub, { color: colors.textMuted }]}>Version 1.0.0 • Local-First Architecture</Text>

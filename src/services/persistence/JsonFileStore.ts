@@ -36,17 +36,23 @@ function pathFor(name: string): string {
 }
 
 export class JsonFileStore {
-  public static async read<T>(name: string, fallback: T): Promise<T> {
+  public static async read<T>(name: string, fallback: T, failOnError = false): Promise<T> {
     try {
       await ensureDirectory();
       const info = await FileSystem.getInfoAsync(pathFor(name));
       if (!info.exists) return fallback;
 
       const raw = await FileSystem.readAsStringAsync(pathFor(name));
-      if (!raw.trim()) return fallback;
+      if (!raw.trim()) {
+        if (failOnError) throw new Error(`Empty storage document: ${name}`);
+        return fallback;
+      }
 
-      return JSON.parse(raw) as T;
+      const parsed = JSON.parse(raw) as T;
+      if (failOnError && parsed === null) throw new Error(`Invalid storage document: ${name}`);
+      return parsed;
     } catch (err) {
+      if (failOnError) throw err;
       console.warn(`[JsonFileStore] Unable to read "${name}", using fallback.`, err);
       return fallback;
     }

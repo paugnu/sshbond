@@ -8,6 +8,8 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "test": "jest",
+    "test:ssh": "bash modules/expo-sshbond/integration/run.sh",
+    "test:ssh:docker": "docker build -f modules/expo-sshbond/integration/Dockerfile -t sshbond-integration . && docker run --rm sshbond-integration",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "build:terminal-assets": "node scripts/build-terminal-assets.mjs",

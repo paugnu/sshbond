@@ -2,6 +2,7 @@ import { EventSubscription } from 'expo-modules-core';
 import { ResolvedSSHConfig, SSHAuthType } from '@/domain/models/sshConfig';
 import { SSHConnection } from '../SSHConnection';
 import { MockSSHBridge } from './MockSSHBridge';
+import { assertSupportedConfig } from '../supportedConfig';
 import { SSHBondNative, SSHForwardSpec, SSHTunnelEvent } from '../../../../modules/expo-sshbond';
 
 export interface PresentedHostKey {
@@ -56,7 +57,11 @@ export class NativeSSHBridge {
   }
 
   public static async connect(request: NativeConnectRequest): Promise<void> {
+    assertSupportedConfig(request.config);
     if (!SSHBondNative) {
+      if (typeof __DEV__ === 'undefined' || !__DEV__) {
+        throw new Error('The native SSH engine is missing from this build. Install a build with SSH support.');
+      }
       await MockSSHBridge.createSession(request);
       return;
     }

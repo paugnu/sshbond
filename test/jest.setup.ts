@@ -1,4 +1,5 @@
 // Mock expo modules for Node/Jest environment
+Object.defineProperty(globalThis, '__DEV__', { value: true, writable: true, configurable: true });
 jest.mock('expo-secure-store', () => {
   const store = new Map<string, string>();
   return {

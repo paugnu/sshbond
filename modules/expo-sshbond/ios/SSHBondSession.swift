@@ -68,7 +68,7 @@ final class SSHBondSession {
   var isClosed: Bool {
     lock.lock()
     defer { lock.unlock() }
-    return closed
+    return closed || closeRequested
   }
 
   /**
@@ -99,7 +99,7 @@ final class SSHBondSession {
           self.events.onError(sessionId: self.params.sessionId, message: message)
         }
         onResult(message)
-        self.close(exitCode: 1)
+        self.closeResources(exitCode: 1)
       }
     }
 
@@ -111,6 +111,7 @@ final class SSHBondSession {
   // MARK: - Connect
 
   private func connectBlocking() throws {
+    guard !isClosed else { throw SSHBondError.message("Connection cancelled.") }
     guard SSHBondSession.libraryReady else {
       throw SSHBondError.message("libssh2 could not be initialised.")
     }
@@ -140,7 +141,12 @@ final class SSHBondSession {
 
     events.onStatus(sessionId: params.sessionId, status: SSHStatus.connecting)
 
-    socketFd = try openSocket(host: params.hostname, port: params.port, timeoutMs: params.timeoutMs)
+    let connectedFd = try openSocket(host: params.hostname, port: params.port, timeoutMs: params.timeoutMs)
+    lock.lock()
+    socketFd = connectedFd
+    let cancelled = closeRequested
+    lock.unlock()
+    guard !cancelled else { throw SSHBondError.message("Connection cancelled.") }
 
     guard let session = libssh2_session_init_ex(nil, nil, nil, nil) else {
       throw SSHBondError.message("Could not create an SSH session.")
@@ -148,6 +154,7 @@ final class SSHBondSession {
     self.session = session
 
     libssh2_session_set_blocking(session, 1)
+    libssh2_session_set_timeout(session, max(1, params.timeoutMs))
 
     if params.compression {
       libssh2_session_flag(session, LIBSSH2_FLAG_COMPRESS, 1)
@@ -162,12 +169,15 @@ final class SSHBondSession {
     }
 
     try gateOnHostKey(session)
+    guard !isClosed else { throw SSHBondError.message("Connection cancelled.") }
 
     events.onStatus(sessionId: params.sessionId, status: SSHStatus.authenticating)
     try authenticate(session)
+    guard !isClosed else { throw SSHBondError.message("Connection cancelled.") }
 
     let channel = try openChannel(session)
     self.channel = channel
+    guard !isClosed else { throw SSHBondError.message("Connection cancelled.") }
 
     events.onStatus(sessionId: params.sessionId, status: SSHStatus.connected)
 
@@ -355,8 +365,9 @@ final class SSHBondSession {
         writeAll(channel: channel, data: data)
       }
 
-      let readAny = drain(channel: channel, streamId: 0, buffer: &stdoutBuffer)
-        || drain(channel: channel, streamId: Int32(SSH_EXTENDED_DATA_STDERR), buffer: &stderrBuffer)
+      let readStdout = drain(channel: channel, streamId: 0, buffer: &stdoutBuffer)
+      let readStderr = drain(channel: channel, streamId: Int32(SSH_EXTENDED_DATA_STDERR), buffer: &stderrBuffer)
+      let readAny = readStdout || readStderr
 
       if libssh2_channel_eof(channel) == 1 { break }
 
@@ -378,7 +389,7 @@ final class SSHBondSession {
     }
 
     let exitStatus = libssh2_channel_get_exit_status(channel)
-    close(exitCode: Int(exitStatus >= 0 ? exitStatus : 0))
+    closeResources(exitCode: Int(exitStatus >= 0 ? exitStatus : 0))
   }
 
   /// Reads one stream until it would block. Returns whether anything arrived.
@@ -387,7 +398,7 @@ final class SSHBondSession {
 
     let capacity = buffer.count
 
-    while true {
+    while !isClosed {
       let count = libssh2_channel_read_ex(channel, streamId, &buffer, capacity)
 
       if count == Int(LIBSSH2_ERROR_EAGAIN) || count == 0 { return received }
@@ -395,6 +406,7 @@ final class SSHBondSession {
         if !isClosed, let session {
           events.onError(sessionId: params.sessionId, message: lastError(session))
         }
+        requestClose()
         return received
       }
 
@@ -406,6 +418,7 @@ final class SSHBondSession {
         events.onData(sessionId: params.sessionId, data: text)
       }
     }
+    return received
   }
 
   private func writeAll(channel: OpaquePointer, data: Data) {
@@ -469,7 +482,28 @@ final class SSHBondSession {
     hostKeyDecided.signal()
   }
 
-  func close(exitCode: Int = 0) {
+  /// Called from module queues. Wake the owner without freeing its C pointers.
+  func requestClose() {
+    lock.lock()
+    if closed || closeRequested {
+      lock.unlock()
+      return
+    }
+    closeRequested = true
+    hostKeyAccepted = false
+    let needsUnblocking = !hostKeyAnswered
+    hostKeyAnswered = true
+    if socketFd >= 0 {
+      // shutdown interrupts a blocking handshake/read. Only the owner closes
+      // the descriptor, so it cannot be reused while another thread uses it.
+      Darwin.shutdown(socketFd, SHUT_RDWR)
+    }
+    lock.unlock()
+    if needsUnblocking { hostKeyDecided.signal() }
+  }
+
+  /// Only the session thread may call this after all libssh2 work has stopped.
+  private func closeResources(exitCode: Int = 0) {
     lock.lock()
     if closed {
       lock.unlock()

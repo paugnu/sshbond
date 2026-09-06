@@ -1,0 +1,10 @@
+node_modules
+.git
+.expo
+dist
+ios
+android
+**/build
+*.log
+test/.integration-tmp
+test/.integration-tmp.*

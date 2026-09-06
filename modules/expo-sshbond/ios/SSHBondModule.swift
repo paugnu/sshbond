@@ -157,7 +157,7 @@ public final class SSHBondModule: Module {
 
     AsyncFunction("disconnect") { (sessionId: String) in
       let session = self.remove(sessionId)
-      session?.close(exitCode: 0)
+      session?.requestClose()
     }
 
     AsyncFunction("isNativeEngineAvailable") { () -> Bool in
@@ -169,7 +169,7 @@ public final class SSHBondModule: Module {
     OnDestroy {
       let open = self.drainSessions()
       for session in open {
-        session.close(exitCode: 0)
+        session.requestClose()
       }
     }
   }
@@ -223,31 +223,31 @@ public final class SSHBondModule: Module {
 
 /// Bridges the engine's plain-Swift sink onto the module's event stream.
 private final class ModuleEventSink: SSHBondEventSink {
-  private unowned let module: SSHBondModule
+  private weak var module: SSHBondModule?
 
   init(module: SSHBondModule) {
     self.module = module
   }
 
   func onStatus(sessionId: String, status: String) {
-    module.emit("onSSHStatus", ["sessionId": sessionId, "status": status])
+    module?.emit("onSSHStatus", ["sessionId": sessionId, "status": status])
   }
 
   func onData(sessionId: String, data: String) {
-    module.emit("onSSHData", ["sessionId": sessionId, "data": data])
+    module?.emit("onSSHData", ["sessionId": sessionId, "data": data])
   }
 
   func onError(sessionId: String, message: String) {
-    module.emit("onSSHError", ["sessionId": sessionId, "message": message])
+    module?.emit("onSSHError", ["sessionId": sessionId, "message": message])
   }
 
   func onClose(sessionId: String, exitCode: Int) {
-    module.forget(sessionId)
-    module.emit("onSSHClose", ["sessionId": sessionId, "exitCode": exitCode])
+    module?.forget(sessionId)
+    module?.emit("onSSHClose", ["sessionId": sessionId, "exitCode": exitCode])
   }
 
   func onHostKey(sessionId: String, hostKey: SSHPresentedHostKey) {
-    module.emit("onSSHHostKey", [
+    module?.emit("onSSHHostKey", [
       "sessionId": sessionId,
       "hostname": hostKey.hostname,
       "port": hostKey.port,
@@ -258,7 +258,7 @@ private final class ModuleEventSink: SSHBondEventSink {
   }
 
   func onTunnel(sessionId: String, tunnelId: String, status: String, boundPort: Int?, message: String?) {
-    module.emit("onSSHTunnel", [
+    module?.emit("onSSHTunnel", [
       "sessionId": sessionId,
       "tunnelId": tunnelId,
       "status": status,

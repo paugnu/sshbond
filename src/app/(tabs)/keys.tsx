@@ -101,7 +101,7 @@ export default function KeysScreen() {
             </View>
             <Text style={[styles.emptyTitle, { color: colors.text }]}>No SSH Keys</Text>
             <Text style={[styles.emptyDesc, { color: colors.textMuted }]}>
-              Generate a modern Ed25519 key or import existing SSH keys. Private keys are stored in the device&apos;s hardware-backed Keychain / Keystore and never uploaded to any server.
+              Generate a modern Ed25519 key or import existing SSH keys. Private keys are stored in the device&apos;s protected Keychain / Keystore. SSHBond reads them locally to authenticate your connections.
             </Text>
           </View>
         ) : (

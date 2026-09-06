@@ -79,7 +79,8 @@ export class HostStorageService {
   public static async init(): Promise<void> {
     if (!this.initPromise) {
       this.initPromise = this.loadAll().catch(err => {
-        console.warn('[HostStorageService] Init failed; continuing with in-memory state.', err);
+        this.initPromise = null;
+        throw err;
       });
     }
     return this.initPromise;
@@ -103,7 +104,11 @@ export class HostStorageService {
     this.knownHosts = await this.loadDocument<KnownHost[]>(DOCS.KNOWN_HOSTS, []);
     this.history = await this.loadDocument<ConnectionHistoryEntry[]>(DOCS.HISTORY, []);
 
-    const storedSettings = await this.loadDocument<Partial<AppSettings>>(DOCS.SETTINGS, {});
+    const storedSettings = await this.loadDocument<Partial<AppSettings>>(DOCS.SETTINGS, {}, true);
+    if (!storedSettings || typeof storedSettings !== 'object' || Array.isArray(storedSettings) ||
+        (storedSettings.requireBiometrics !== undefined && typeof storedSettings.requireBiometrics !== 'boolean')) {
+      throw new Error('Security settings are invalid. Restore the settings before unlocking.');
+    }
     this.settings = { ...DEFAULT_SETTINGS, ...storedSettings };
 
     if (this.groups.length === 0) {
@@ -119,13 +124,13 @@ export class HostStorageService {
    * Reads a document, transparently migrating data written by builds that kept
    * the metadata tier in SecureStore.
    */
-  private static async loadDocument<T>(name: string, fallback: T): Promise<T> {
-    const fromFile = await JsonFileStore.read<T | null>(name, null);
+  private static async loadDocument<T>(name: string, fallback: T, failOnError = false): Promise<T> {
+    const fromFile = await JsonFileStore.read<T | null>(name, null, failOnError);
     if (fromFile !== null) return fromFile;
 
     const legacyKey = LEGACY_SECURE_KEYS[name];
     if (legacyKey) {
-      const legacyRaw = await SecureStorageService.getSecret(legacyKey);
+      const legacyRaw = await SecureStorageService.getSecret(legacyKey, undefined, failOnError);
       if (legacyRaw) {
         try {
           const parsed = JSON.parse(legacyRaw) as T;
@@ -133,6 +138,7 @@ export class HostStorageService {
           await SecureStorageService.deleteSecret(legacyKey);
           return parsed;
         } catch (err) {
+          if (failOnError) throw err;
           console.warn(`[HostStorageService] Could not migrate legacy "${name}".`, err);
         }
       }
@@ -306,8 +312,9 @@ export class HostStorageService {
 
   public static async updateSettings(updates: Partial<AppSettings>): Promise<AppSettings> {
     await this.init();
-    this.settings = { ...this.settings, ...updates };
-    await JsonFileStore.write(DOCS.SETTINGS, this.settings);
+    const settings = { ...this.settings, ...updates };
+    await JsonFileStore.write(DOCS.SETTINGS, settings);
+    this.settings = settings;
     return { ...this.settings };
   }
 }

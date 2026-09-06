@@ -120,8 +120,8 @@ interface SSHBondNativeModule {
 /**
  * The native SSH engine, or `null` where it was not built in.
  *
- * The module is Android-only for now and is absent under Expo Go, on web and in
- * Jest, so callers must handle `null` rather than assume a transport exists.
+ * Available in Android and iOS native builds; absent under Expo Go, on web and
+ * in Jest. Production callers must refuse to connect when it is missing.
  */
 export const SSHBondNative: (SSHBondNativeModule & EventEmitter) | null = (() => {
   try {

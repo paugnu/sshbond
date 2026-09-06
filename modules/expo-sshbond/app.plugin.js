@@ -1,10 +1,10 @@
-const { withGradleProperties } = require('@expo/config-plugins');
+const { withGradleProperties, withAppBuildGradle } = require('@expo/config-plugins');
 
 const IGNORE_LIST_KEY = 'android.jetifier.ignorelist';
-const IGNORED_ARTIFACT = 'jsch';
+const IGNORED_ARTIFACTS = ['jsch', 'bcprov'];
 
 /**
- * Keeps Jetifier away from the JSch jar.
+ * Keeps Jetifier away from the JSch and Bouncy Castle jars.
  *
  * The Expo template still sets `android.enableJetifier=true` for the sake of
  * pre-AndroidX libraries. JSch ships as a multi-release jar whose
@@ -17,6 +17,22 @@ const IGNORED_ARTIFACT = 'jsch';
  * because `expo prebuild` regenerates that file from the template on every run.
  */
 module.exports = function withSSHBond(config) {
+  config = withAppBuildGradle(config, gradleConfig => {
+    const marker = '// SSHBond crypto library packaging';
+    if (!gradleConfig.modResults.contents.includes(marker)) {
+      gradleConfig.modResults.contents += `
+${marker}
+android {
+  packagingOptions {
+    resources {
+      excludes += ['META-INF/versions/**/OSGI-INF/MANIFEST.MF']
+    }
+  }
+}
+`;
+    }
+    return gradleConfig;
+  });
   return withGradleProperties(config, gradleConfig => {
     const properties = gradleConfig.modResults;
     const existing = properties.find(
@@ -28,7 +44,7 @@ module.exports = function withSSHBond(config) {
         type: 'comment',
         value: 'Jetifier cannot read JSch\'s multi-release class files, and has nothing to rewrite in it.',
       });
-      properties.push({ type: 'property', key: IGNORE_LIST_KEY, value: IGNORED_ARTIFACT });
+      properties.push({ type: 'property', key: IGNORE_LIST_KEY, value: IGNORED_ARTIFACTS.join(',') });
       return gradleConfig;
     }
 
@@ -38,10 +54,10 @@ module.exports = function withSSHBond(config) {
       .map(entry => entry.trim())
       .filter(Boolean);
 
-    if (!entries.includes(IGNORED_ARTIFACT)) {
-      entries.push(IGNORED_ARTIFACT);
-      existing.value = entries.join(',');
+    for (const artifact of IGNORED_ARTIFACTS) {
+      if (!entries.includes(artifact)) entries.push(artifact);
     }
+    existing.value = entries.join(',');
 
     return gradleConfig;
   });

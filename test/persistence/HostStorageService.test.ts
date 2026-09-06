@@ -42,6 +42,15 @@ function makeIdentity(overrides: Partial<SSHIdentity> = {}): SSHIdentity {
 }
 
 describe('HostStorageService', () => {
+  it.each(['{broken', '', 'null', '[]', '{"requireBiometrics":"false"}'])(
+    'refuses to unlock using defaults when settings are invalid: %s', async raw => {
+      await FileSystemMock.writeAsStringAsync('file:///test-documents/sshbond/settings.json', raw);
+      await expect(HostStorageService.getSettings()).rejects.toThrow();
+      await FileSystemMock.writeAsStringAsync('file:///test-documents/sshbond/settings.json', '{"requireBiometrics":true}');
+      expect((await HostStorageService.getSettings()).requireBiometrics).toBe(true);
+    }
+  );
+
   beforeEach(async () => {
     FileSystemMock.__reset();
     jest.clearAllMocks();

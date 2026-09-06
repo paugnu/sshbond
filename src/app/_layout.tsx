@@ -1,71 +1,80 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import { AppState, Keyboard, Modal, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeProvider, useTheme } from '../theme/ThemeContext';
 import { SecureStorageService } from '../services/secureStorage/SecureStorageService';
 import { HostStorageService } from '../services/persistence/HostStorageService';
 import { ShieldCheck, Lock } from 'lucide-react-native';
+import { AppLockController, AppLockState } from '../services/secureStorage/AppLockController';
 
 function RootLayoutContent() {
   const { colors, isDark } = useTheme();
-  const [isLocked, setIsLocked] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [lockState, setLockState] = useState<AppLockState>('checking');
+  const [hasUnlocked, setHasUnlocked] = useState(false);
+  const lockController = useRef<AppLockController | null>(null);
 
   useEffect(() => {
-    checkBiometricLock();
+    const controller = new AppLockController(
+      async () => (await HostStorageService.getSettings()).requireBiometrics,
+      () => SecureStorageService.promptBiometrics('Unlock SSHBond'),
+      state => {
+        setLockState(state);
+        if (state === 'unlocked') setHasUnlocked(true);
+      },
+    );
+    lockController.current = controller;
+    const subscription = AppState.addEventListener('change', state => {
+      if (state !== 'active') Keyboard.dismiss();
+      controller.onAppStateChange(state);
+    });
+    void controller.unlock();
+    return () => {
+      subscription.remove();
+      controller.dispose();
+      lockController.current = null;
+    };
   }, []);
 
-  const checkBiometricLock = async () => {
-    try {
-      const settings = await HostStorageService.getSettings();
-      if (settings.requireBiometrics) {
-        setIsLocked(true);
-        const unlocked = await SecureStorageService.promptBiometrics('Unlock SSHBond');
-        if (unlocked) {
-          setIsLocked(false);
-        }
-      }
-    } catch {
-      // Ignored
-    } finally {
-      setCheckingAuth(false);
-    }
-  };
-
-  if (checkingAuth) {
-    return (
+  let lockScreen: React.ReactNode = null;
+  if (lockState === 'checking') {
+    lockScreen = (
       <View style={[styles.center, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
-  if (isLocked) {
-    return (
+  if (lockState === 'locked') {
+    lockScreen = (
       <View style={[styles.center, { backgroundColor: colors.background }]}>
         <View style={[styles.lockIcon, { backgroundColor: colors.surfaceSubtle }]}>
           <Lock size={36} color={colors.primary} />
         </View>
         <Text style={[styles.lockTitle, { color: colors.text }]}>SSHBond Locked</Text>
         <Text style={[styles.lockSubtitle, { color: colors.textMuted }]}>
-          Biometric verification is required to access your SSH keys and hosts.
+          Unlock to access your SSH keys and hosts. If authentication fails, check your device security settings and try again.
         </Text>
         <TouchableOpacity
           style={[styles.unlockBtn, { backgroundColor: colors.primary }]}
-          onPress={checkBiometricLock}
+          onPress={() => void lockController.current?.unlock()}
         >
           <ShieldCheck size={18} color="#ffffff" />
-          <Text style={styles.unlockBtnText}>Unlock with Biometrics</Text>
+          <Text style={styles.unlockBtnText}>Unlock</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <>
+    <View style={styles.root}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
+      {hasUnlocked && <View
+        style={[styles.root, lockState !== 'unlocked' && { display: 'none' }]}
+        accessibilityElementsHidden={lockState !== 'unlocked'}
+        importantForAccessibility={lockState !== 'unlocked' ? 'no-hide-descendants' : 'auto'}
+      >
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: colors.surface },
@@ -97,7 +106,11 @@ function RootLayoutContent() {
           }}
         />
       </Stack>
-    </>
+      </View>}
+      <Modal visible={lockState !== 'unlocked'} animationType="none" onRequestClose={() => {}}>
+        {lockScreen}
+      </Modal>
+    </View>
   );
 }
 

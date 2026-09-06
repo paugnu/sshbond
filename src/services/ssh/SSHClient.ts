@@ -11,6 +11,7 @@ import {
 } from './native/NativeSSHBridge';
 import { SSHTunnelManager } from './SSHTunnelManager';
 import { SSHProxyJump, ProxyJumpHop, CredentialTarget, addressKey } from './SSHProxyJump';
+import { assertSupportedConfig } from './supportedConfig';
 
 export interface HostKeyChallenge {
   hostname: string;
@@ -42,6 +43,7 @@ export class SSHClient {
     config: ResolvedSSHConfig,
     options: ConnectOptions = {}
   ): Promise<ISSHConnection> {
+    assertSupportedConfig(config);
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const connection = new SSHConnection(sessionId, config);
     const startTime = Date.now();

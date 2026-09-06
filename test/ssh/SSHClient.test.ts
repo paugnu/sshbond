@@ -4,6 +4,7 @@ import { SSHKnownHosts } from '../../src/services/ssh/hosts/SSHKnownHosts';
 import { HostStorageService } from '../../src/services/persistence/HostStorageService';
 import { ISSHConnection } from '../../src/services/ssh/SSHConnection';
 import { ResolvedSSHConfig, ConnectionStatus, SSHHost } from '../../src/domain/models/sshConfig';
+import { NativeSSHBridge } from '../../src/services/ssh/native/NativeSSHBridge';
 
 const FileSystemMock = jest.requireMock('expo-file-system/legacy') as { __reset: () => void };
 
@@ -44,6 +45,43 @@ function waitForStatus(connection: ISSHConnection, target: ConnectionStatus): Pr
 }
 
 describe('SSHClient host key verification', () => {
+  it.each([{ proxyCommand: 'ssh gateway -W %h:%p' }, { forwardAgent: true }])(
+    'rejects unsupported transport options before contacting the bridge: %j', async overrides => {
+      const bridge = jest.spyOn(NativeSSHBridge, 'connect');
+      try {
+        await expect(SSHClient.connect(makeConfig(overrides))).rejects.toThrow('not supported');
+        expect(bridge).not.toHaveBeenCalled();
+      } finally {
+        bridge.mockRestore();
+      }
+    }
+  );
+
+  it('never simulates an SSH connection in a production build', async () => {
+    Object.assign(globalThis, { __DEV__: false });
+    try {
+      await expect(SSHClient.connect(makeConfig())).rejects.toThrow('native SSH engine is missing');
+    } finally {
+      Object.assign(globalThis, { __DEV__: true });
+    }
+  });
+
+  it('rejects a bastion that requires an unsupported ProxyCommand', async () => {
+    await HostStorageService.saveHost({
+      id: 'unsupported-bastion', alias: 'gateway', hostname: 'gateway.example.com',
+      username: 'jump', port: 22, authenticationType: 'none',
+      proxyCommand: 'ssh outer -W %h:%p', tags: [], favorite: false,
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+    });
+    const bridge = jest.spyOn(NativeSSHBridge, 'connect');
+    try {
+      await expect(SSHClient.connect(makeConfig({ proxyJump: 'gateway' }))).rejects.toThrow('ProxyCommand');
+      expect(bridge).not.toHaveBeenCalled();
+    } finally {
+      bridge.mockRestore();
+    }
+  });
+
   beforeEach(async () => {
     FileSystemMock.__reset();
     await HostStorageService.reset();

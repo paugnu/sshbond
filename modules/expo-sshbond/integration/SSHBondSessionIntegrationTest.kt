@@ -243,16 +243,16 @@ fun main(args: Array<String>) {
 
     println("\n== 2. Interactive PTY: shell, commands, UTF-8, resize ==")
     Thread.sleep(1500)
-    session.sendData("echo INTERACTIVE_OK\n")
+    session.sendData("printf 'INTERACTIVE_%s\\n' OK\n")
     Thread.sleep(1500)
     check("shell executed a command", rec.text().contains("INTERACTIVE_OK"), rec.text().takeLast(200))
 
-    session.sendData("echo 'ünïcödé 🔐 ok'\n")
+    session.sendData("printf '%s %s %s\\n' 'ünïcödé' '🔐' 'ok'\n")
     Thread.sleep(1500)
     check("multi-byte UTF-8 survives chunking", rec.text().contains("ünïcödé 🔐 ok"))
 
     // A real PTY is what makes ncurses apps work; stty proves one is attached.
-    session.sendData("tty | grep -q /dev/pts && echo PTY_ATTACHED\n")
+    session.sendData("tty | grep -q /dev/pts && printf 'PTY_%s\\n' ATTACHED\n")
     Thread.sleep(1500)
     check("a PTY is allocated", rec.text().contains("PTY_ATTACHED"))
 
@@ -382,7 +382,7 @@ fun main(args: Array<String>) {
     check("the error says what went wrong", bad?.message?.isNotBlank() == true, "msg=${bad?.message}")
 
     // A forward that failed must not take the shell down with it.
-    session.sendData("echo FORWARD_FAILURE_SURVIVED\n")
+    session.sendData("printf 'FORWARD_FAILURE_%s\\n' SURVIVED\n")
     Thread.sleep(1500)
     check("the session survives a failed forward", rec.text().contains("FORWARD_FAILURE_SURVIVED"))
 
@@ -469,6 +469,53 @@ fun main(args: Array<String>) {
     check("the command ran on the far end", rec.closed.await(15, TimeUnit.SECONDS) &&
       rec.text().contains("TWO_HOPS_OK"), rec.text().takeLast(200))
     check("no errors were reported", rec.errors.isEmpty(), rec.errors.toList().toString())
+  }
+
+  println("\n== 11. Encrypted private key authentication ==")
+  run {
+    val rec = Recorder()
+    val session = SSHBondSession(params(dir, "s9", command = "printf ENCRYPTED_KEY_OK").copy(
+      privateKey = File("$dir/client_key_encrypted").readText(),
+      passphrase = "sshbond-integration-only"
+    ), rec)
+    session.start { }
+    check("encrypted key: host key arrives", rec.hostKeySeen.await(15, TimeUnit.SECONDS))
+    session.provideHostKeyDecision(true)
+    check("encrypted key authenticates and executes remotely", rec.closed.await(20, TimeUnit.SECONDS) &&
+      rec.text().contains("ENCRYPTED_KEY_OK"), rec.errors.toList().toString())
+    session.close(0)
+  }
+
+  println("\n== 12. Incorrect private key passphrase ==")
+  run {
+    val rec = Recorder()
+    val session = SSHBondSession(params(dir, "s10").copy(
+      privateKey = File("$dir/client_key_encrypted").readText(), passphrase = "incorrect"
+    ), rec)
+    val settled = CountDownLatch(1)
+    var failure: String? = null
+    session.start { error -> failure = error; settled.countDown() }
+    // An implementation may validate/decrypt the key before opening the socket.
+    val deadline = System.currentTimeMillis() + 15_000
+    while (rec.hostKeys.isEmpty() && settled.count > 0 && System.currentTimeMillis() < deadline) Thread.sleep(20)
+    if (rec.hostKeys.isNotEmpty()) session.provideHostKeyDecision(true)
+    check("wrong passphrase fails", settled.await(15, TimeUnit.SECONDS) && failure != null)
+    check("wrong passphrase never connects", !rec.statuses.contains("connected"))
+    session.close(0)
+  }
+
+  println("\n== 13. Disconnect while host approval is pending ==")
+  run {
+    val rec = Recorder()
+    val session = SSHBondSession(params(dir, "s11"), rec)
+    val settled = CountDownLatch(1)
+    session.start { settled.countDown() }
+    check("pending approval reaches real server", rec.hostKeySeen.await(15, TimeUnit.SECONDS))
+    session.close(0)
+    check("cancel closes the connection", rec.closed.await(5, TimeUnit.SECONDS))
+    check("cancel settles the connect operation", settled.await(5, TimeUnit.SECONDS))
+    session.provideHostKeyDecision(true)
+    check("late approval cannot connect", !rec.statuses.contains("connected"))
   }
 
   println("\n${if (failures == 0) "ALL CHECKS PASSED" else "$failures CHECK(S) FAILED"}")

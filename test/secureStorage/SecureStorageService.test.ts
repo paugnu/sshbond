@@ -11,6 +11,14 @@ function pemOfSize(bytes: number): string {
 }
 
 describe('SecureStorageService', () => {
+  it('refuses authentication when biometrics have been removed', async () => {
+    const auth = jest.requireMock('expo-local-authentication');
+    auth.isEnrolledAsync.mockResolvedValueOnce(false);
+    const calls = auth.authenticateAsync.mock.calls.length;
+    expect(await SecureStorageService.promptBiometrics()).toBe(false);
+    expect(auth.authenticateAsync.mock.calls).toHaveLength(calls);
+  });
+
   beforeEach(() => {
     SecureStoreMock.__store.clear();
   });

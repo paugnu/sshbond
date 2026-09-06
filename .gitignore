@@ -12,3 +12,4 @@ web-build/
 modules/*/android/build/
 
 .DS_Store
+test/.integration-tmp.*/
