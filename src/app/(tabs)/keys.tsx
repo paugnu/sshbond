@@ -149,6 +149,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   topBtn: {
+    minHeight: 48,
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',

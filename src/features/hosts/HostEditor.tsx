@@ -777,6 +777,7 @@ const styles = StyleSheet.create({
     padding: 3,
   },
   modeBtn: {
+    minHeight: 48,
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -838,6 +839,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   input: {
+    minHeight: 48,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
@@ -855,6 +857,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   chip: {
+    minHeight: 48,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 6,
@@ -869,6 +872,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   authTypeBtn: {
+    minHeight: 48,
     flex: 1,
     paddingVertical: 8,
     borderRadius: 6,
@@ -911,6 +915,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   accordionHeader: {
+    minHeight: 48,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

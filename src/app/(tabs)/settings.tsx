@@ -217,6 +217,8 @@ export default function SettingsScreen() {
             <View style={styles.stepper}>
               <TouchableOpacity
                 style={[styles.stepperBtn, { borderColor: colors.border }]}
+                accessibilityRole="button"
+                accessibilityLabel="Decrease terminal font size"
                 onPress={() => handleUpdate({ terminalFontSize: Math.max(8, settings.terminalFontSize - 1) })}
               >
                 <Minus size={14} color={colors.text} />
@@ -224,6 +226,8 @@ export default function SettingsScreen() {
               <Text style={[styles.stepperValue, { color: colors.text }]}>{settings.terminalFontSize}</Text>
               <TouchableOpacity
                 style={[styles.stepperBtn, { borderColor: colors.border }]}
+                accessibilityRole="button"
+                accessibilityLabel="Increase terminal font size"
                 onPress={() => handleUpdate({ terminalFontSize: Math.min(28, settings.terminalFontSize + 1) })}
               >
                 <Plus size={14} color={colors.text} />
@@ -393,6 +397,9 @@ export default function SettingsScreen() {
 
           <View style={[styles.divider, { backgroundColor: colors.borderSubtle }]} />
 
+          <TouchableOpacity accessibilityRole="button" style={styles.clickableRow} onPress={() => router.push('/licenses')}>
+            <Text style={[styles.settingLabel, { color: colors.text }]}>Open-source licenses</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.clickableRow} onPress={() => router.push('/privacy')}>
             <Text style={[styles.settingLabel, { color: colors.text }]}>Privacy Policy</Text>
             <ChevronRight size={18} color={colors.textMuted} />
@@ -449,6 +456,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   themeOption: {
+    minHeight: 48,
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -468,6 +476,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   termThemeChip: {
+    minHeight: 48,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 6,
@@ -500,6 +509,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   clickableRow: {
+    minHeight: 48,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -511,8 +521,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   stepperBtn: {
-    width: 30,
-    height: 30,
+    minHeight: 48,
+    width: 48,
+    height: 48,
     borderRadius: 6,
     borderWidth: 1,
     justifyContent: 'center',

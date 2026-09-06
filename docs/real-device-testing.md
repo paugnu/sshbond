@@ -6,8 +6,9 @@ errores de TypeScript/lint y exportaciones JavaScript/Hermes Android e iOS
 correctas. Swift/libssh2 han compilado en EAS para iOS (IPA 1.0.0 build 7),
 pero Apple ha rechazado el procesamiento por ITMS-90592 (cifrado). Android
 1.0.0 (4) está disponible en la prueba interna de Google Play; AAB validado
-por Play, incluido target SDK 36. No se ha probado todavía la app instalada
-en un dispositivo. Compilar y examinar artefactos no sustituye esa prueba.
+por Play, incluido target SDK 36. Firebase Robo ha ejecutado la app instalada en un Pixel 5 API 30 con resultado
+correcto. Ver [informe y límites](android-firebase-results.md): faltan las pruebas
+funcionales dirigidas y revalidar las correcciones de accesibilidad posteriores.
 
 ## Integración real y reproducible
 

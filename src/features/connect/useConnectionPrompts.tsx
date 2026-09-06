@@ -234,6 +234,7 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
   },
   input: {
+    minHeight: 48,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
@@ -248,6 +249,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   button: {
+    minHeight: 48,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,

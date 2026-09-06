@@ -86,7 +86,7 @@ export const GenerateKeyModal: React.FC<GenerateKeyModalProps> = ({ visible, onC
               <ShieldCheck size={20} color={colors.primary} />
               <Text style={[styles.title, { color: colors.text }]}>Generate SSH Key</Text>
             </View>
-            <TouchableOpacity onPress={onClose} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close key dialog" style={{ minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' }} onPress={onClose}>
               <X size={20} color={colors.textMuted} />
             </TouchableOpacity>
           </View>
@@ -218,6 +218,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   input: {
+    minHeight: 48,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
@@ -229,6 +230,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   algoBtn: {
+    minHeight: 48,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 6,
@@ -271,6 +273,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   genButton: {
+    minHeight: 48,
     marginTop: 20,
     paddingVertical: 12,
     borderRadius: 8,

@@ -25,6 +25,7 @@ export const QuickConnectBar: React.FC<QuickConnectBarProps> = ({ onConnect, onS
   return (
     <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <TextInput
+        accessibilityLabel="SSH connection address"
         style={[styles.input, { color: colors.text }]}
         placeholder="user@host:port (e.g. pau@192.168.1.50)"
         placeholderTextColor={colors.textSubtle}
@@ -49,6 +50,8 @@ export const QuickConnectBar: React.FC<QuickConnectBarProps> = ({ onConnect, onS
 
         <TouchableOpacity
           style={[styles.iconButton, { borderColor: colors.border }]}
+          accessibilityRole="button"
+          accessibilityLabel="Save host from quick connect"
           onPress={handleSave}
           disabled={!value.trim()}
           activeOpacity={0.8}
@@ -71,6 +74,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   input: {
+    minHeight: 48,
     flex: 1,
     fontSize: 13,
     fontFamily: 'monospace',
@@ -82,6 +86,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   button: {
+    minHeight: 48,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
@@ -95,6 +100,8 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   iconButton: {
+    minWidth: 48,
+    minHeight: 48,
     padding: 6,
     borderRadius: 6,
     borderWidth: 1,

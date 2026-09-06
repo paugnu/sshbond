@@ -417,6 +417,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   searchInput: {
+    minHeight: 48,
     flex: 1,
     fontSize: 13,
   },
@@ -424,6 +425,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   pill: {
+    minHeight: 48,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -459,6 +461,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   fab: {
+    minHeight: 48,
     position: 'absolute',
     bottom: 20,
     right: 20,

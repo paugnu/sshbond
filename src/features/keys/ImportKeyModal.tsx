@@ -126,7 +126,7 @@ export const ImportKeyModal: React.FC<ImportKeyModalProps> = ({ visible, onClose
             </View>
             <View style={styles.headerActions}>
               <DismissKeyboardButton color={colors.primary} />
-              <TouchableOpacity onPress={onClose} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close key dialog" style={{ minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' }} onPress={onClose}>
                 <X size={20} color={colors.textMuted} />
               </TouchableOpacity>
             </View>
@@ -249,6 +249,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   input: {
+    minHeight: 48,
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 12,
@@ -297,6 +298,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   importButton: {
+    minHeight: 48,
     marginTop: 16,
     marginBottom: 10,
     paddingVertical: 12,

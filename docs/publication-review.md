@@ -82,12 +82,35 @@ de vulnerabilidades. El audit npm no cubre dependencias Kotlin/C/Swift.
   de cifrado correspondiente. No está disponible en TestFlight.
 - Francia incluida por decisión explícita del titular. El cuestionario Apple
   exige el documento francés para algoritmos estándar fuera del sistema.
-  Primer expediente ANSSI y formulario XFA preparados localmente; no enviados
-  ni firmados. Después de obtener el documento y la aprobación de Apple,
+  Primer expediente ANSSI firmado y fechado, con formulario XFA, enviado
+  el 6 de septiembre con autorización expresa; acuse de recibo de ANSSI confirmado el mismo día; pendiente de examen y attestation. Después de obtener el documento y la aprobación de Apple,
   incorporar su código al IPA y compilar/subir una nueva versión.
 - Privacidad pública: https://github.com/paugnu/sshbond/blob/main/docs/privacy.md
 - Soporte público: https://github.com/paugnu/sshbond/blob/main/docs/support.md
 - App Privacy «Data Not Collected» publicado con autorización explícita.
+- Apple: textos en en-US, es-ES y fr-FR guardados y verificados, clasificación
+  calculada 4+, datos de contacto de revisión y acceso SSH de demo guardados.
+- Play: textos en en-US, es-ES y fr-FR guardados como borrador, icono y gráfico
+  destacado subidos. Herramientas, soporte HTTPS y email configurados; sin
+  anuncios, funciones financieras, de salud ni carácter gubernamental.
+  Acceso de revisión, audiencia 13+ y declaración sin recogida/cesión de datos
+  guardados. Dos capturas auténticas del Pixel 5 añadidas; ficha lista para enviar
+  a revisión, 10/11 tareas iniciales completadas. Pendiente IARC/aceptación de términos.
+- Demo de revisión aislada en el VPS del titular, separada de YogaBond:
+  contenedor de solo lectura, usuario no privilegiado, límites de recursos,
+  sin volúmenes de producción y sin conexiones salientes. Contraseña, clave,
+  túnel real y aislamiento comprobados; health de YogaBond correcto.
+  Credenciales y operación permanecen en documentación local excluida de Git.
+- Nueva ejecución del motor Android/JVM contra OpenSSH: 68 checks / 13 escenarios,
+  todos correctos. Firebase Test Lab ha recibido el AAB 1.0.0 (4); la ejecución
+  terminó correctamente en un Pixel 5 API 30: 89 acciones, 24 pantallas,
+  5 min 12 s. Detectó 34 avisos de accesibilidad; primeras correcciones locales
+  verificadas con TypeScript/lint/Jest y exportaciones Hermes, pendientes de
+  nueva build y revalidación nativa. Ver android-firebase-results.md.
+- Gratuidad autorizada por el titular: Play confirmado «Sin coste»; Apple
+  configurado y verificado a 0 EUR, territorio base España.
+- Visor de licencias sin conexión añadido. Inventario y omisiones documentados
+  en third-party/README.md; no se considera cerrada la auditoría nativa.
 
 ## Antes del lanzamiento público
 
