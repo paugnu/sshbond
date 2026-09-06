@@ -90,7 +90,7 @@ de vulnerabilidades. El audit npm no cubre dependencias Kotlin/C/Swift.
 - App Privacy «Data Not Collected» publicado con autorización explícita.
 - Apple: textos en en-US, es-ES y fr-FR guardados y verificados, clasificación
   calculada 4+, datos de contacto de revisión y acceso SSH de demo guardados.
-- Play: textos en en-US, es-ES y fr-FR guardados como borrador, icono y gráfico
+- Play: textos en en-US, es-ES y fr-FR guardados, icono y gráfico
   destacado subidos. Herramientas, soporte HTTPS y email configurados; sin
   anuncios, funciones financieras, de salud ni carácter gubernamental.
   Acceso de revisión, audiencia 13+ y declaración sin recogida/cesión de datos
@@ -108,7 +108,11 @@ de vulnerabilidades. El audit npm no cubre dependencias Kotlin/C/Swift.
   verificadas con TypeScript/lint/Jest y exportaciones Hermes, pendientes de
   nueva build y revalidación nativa. Ver android-firebase-results.md.
 - Gratuidad autorizada por el titular: Play confirmado «Sin coste»; Apple
-  configurado y verificado a 0 EUR, territorio base España.
+  configurado y verificado a 0 EUR, territorio base España. Disponibilidad
+  inicial de España y Francia guardada y verificada en ambas tiendas.
+- Build Android 1.0.0 (5) enviada a EAS desde b8f25a5:
+  https://expo.dev/accounts/paugnu/projects/sshbond/builds/9f717f03-296e-4df7-b2ba-cbc611a1a99d
+  Pendiente de terminar y revalidar en dispositivo; la build 4 sigue en Play.
 - Visor de licencias sin conexión añadido. Inventario y omisiones documentados
   en third-party/README.md; no se considera cerrada la auditoría nativa.
 
@@ -117,12 +121,14 @@ de vulnerabilidades. El audit npm no cubre dependencias Kotlin/C/Swift.
 1. Completar la [prueba en dispositivo](real-device-testing.md): interfaz,
    Keychain/Keystore, biometría, teclado, segundo plano, cambio de red y conexión
    real desde cada plataforma. La prueba JVM no ejecuta ART ni Swift.
-2. Completar clasificación de edad, Data safety, ficha Play, capturas auténticas
-   de iPhone/iPad/Android y datos de revisión. Preparar un servidor y credenciales
-   desechables de revisión, sin exponer sistemas personales.
+2. Completar IARC tras aceptar sus términos; añadir capturas auténticas de
+   iPhone/iPad cuando se pueda ejecutar iOS. Mantener disponible la demo aislada
+   mientras las tiendas revisan la app. Data safety, datos de revisión y la ficha
+   de Play con capturas Android ya están guardados.
 3. Resolver exportación de cifrado según mercados. La app incluye algoritmos
    estándar fuera de las APIs del sistema; no se ha marcado falsamente como
    exenta. Francia requiere resolver la documentación solicitada por Apple
    antes de distribuir allí. No excluir Francia para eludir ese trámite.
-4. Revisar atribuciones y licencias de todas las bibliotecas distribuidas, precio
-   y países definitivos. La distribución actual prevista es de pruebas internas.
+4. Cerrar las omisiones del inventario de atribuciones y comprobar las licencias
+   de las dependencias nativas finales. Precio gratuito y España/Francia ya
+   configurados. La distribución actual sigue siendo de pruebas internas.
