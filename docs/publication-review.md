@@ -120,6 +120,22 @@ de vulnerabilidades. El audit npm no cubre dependencias Kotlin/C/Swift.
 - Visor de licencias sin conexión añadido. Inventario y omisiones documentados
   en third-party/README.md; no se considera cerrada la auditoría nativa.
 
+## Actualización del 10 de septiembre de 2026
+
+- Google Play: canal cerrado Alpha activo, build 1.0.0 (4) disponible para
+  testers autorizados. La consola ya no muestra cambios pendientes de revisión.
+- Apple: 1.0.0 en Prepare for Submission, TestFlight sin builds aceptadas.
+- El titular ha cambiado su preferencia: Francia queda temporalmente excluida
+  de iOS. Guardado y verificado Spain / Available on App Release y
+  France / Not Available. Google Play no se ha modificado.
+- Cuestionario Apple: cifrado estándar fuera del sistema operativo, sin
+  algoritmos propietarios y sin distribución en Francia. El resultado indica
+  que no hacen falta documentos y permite declarar la exención en Info.plist.
+  Se cambia ITSAppUsesNonExemptEncryption a false para esta distribución.
+  Esto no afirma que SSHBond carezca de cifrado. Revaluar la declaración antes
+  de reactivar Francia; el expediente ANSSI sigue pendiente.
+- Referencia: https://developer.apple.com/help/app-store-connect/reference/app-information/export-compliance-documentation-for-encryption/
+
 ## Antes del lanzamiento público
 
 1. Completar la [prueba en dispositivo](real-device-testing.md): interfaz,
@@ -132,7 +148,8 @@ de vulnerabilidades. El audit npm no cubre dependencias Kotlin/C/Swift.
 3. Resolver exportación de cifrado según mercados. La app incluye algoritmos
    estándar fuera de las APIs del sistema; no se ha marcado falsamente como
    exenta. Francia requiere resolver la documentación solicitada por Apple
-   antes de distribuir allí. No excluir Francia para eludir ese trámite.
+   antes de distribuir allí. Francia está temporalmente excluida de iOS por decisión posterior del titular;
+   antes de reactivarla, completar la documentación y revaluar la declaración.
 4. Cerrar las omisiones del inventario de atribuciones y comprobar las licencias
    de las dependencias nativas finales. Precio gratuito y España/Francia ya
    configurados. Pruebas internas activas y beta cerrada en revisión.

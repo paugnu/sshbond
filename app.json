@@ -17,7 +17,7 @@
       "infoPlist": {
         "NSFaceIDUsageDescription": "SSHBond uses Face ID to securely authenticate and protect your private SSH keys.",
         "NSLocalNetworkUsageDescription": "SSHBond connects to SSH servers on your local network when you choose a local server.",
-        "ITSAppUsesNonExemptEncryption": true
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
