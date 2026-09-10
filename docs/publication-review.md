@@ -135,6 +135,23 @@ de vulnerabilidades. El audit npm no cubre dependencias Kotlin/C/Swift.
   Esto no afirma que SSHBond carezca de cifrado. Revaluar la declaración antes
   de reactivar Francia; el expediente ANSSI sigue pendiente.
 - Referencia: https://developer.apple.com/help/app-store-connect/reference/app-information/export-compliance-documentation-for-encryption/
+- Build iOS 1.0.0 (8) lanzada desde ae939f5, perfil testing, con envío automático:
+  https://expo.dev/accounts/paugnu/projects/sshbond/builds/bfec22ac-a9d7-42ed-b12e-0c55ccf6b3c2
+  Envío EAS: 5a15feea-7165-407f-b3f3-1402e0f59995, FINISHED.
+  IPA 1.0.0 (8) íntegro, bundle com.sshbond.client y declaración false verificados.
+  SHA-256: 96280ebf3a83d15d346d3721ef4c31d24b9728462bf6de634c64ff37786f788c.
+  Apple recibió la build el 10 de septiembre a las 08:55 CEST; procesamiento
+  Complete y grupo interno con build en estado Testing verificados.
+  ID de build Apple: d03ba88b-271a-435c-b0fd-8ea153026956.
+  Invitación TestFlight recibida por el titular a las 08:58 CEST.
+  Instrucciones de prueba guardadas en la build. No se ha enviado a revisión
+  pública de App Store ni abierto un grupo externo.
+- Grupo TestFlight existente «Pruebas internas»: un tester, la cuenta del titular.
+  Información de beta, soporte y acceso a la demo completados.
+- TypeScript, lint y 159 pruebas Jest correctos tras el cambio de configuración.
+  Servicio demo activo; conexión SSH real con clave y verificación estricta de
+  huella correctas. Esto no sustituye las pruebas desde iOS.
+
 
 ## Antes del lanzamiento público
 
