@@ -66,3 +66,8 @@ Informe: https://console.firebase.google.com/project/yogabond-studio/testlab/his
 SHA-256 del AAB: `eb0038833583a6c05b42df3d9384ef5a4487e023b74d77ec8ed250ad4dd4f766`.
 Después de esta comprobación se envió la versión al canal de producción de Play;
 la consola confirmó «Cambios en revisión». Ver `publication-review.md`.
+
+Accesibilidad: 11 incidencias automáticas (5 advertencias y 6 menores): 3 de
+tamaño táctil, 3 de contraste, 2 de etiquetado y 3 de implementación. Permanecen
+como mejoras pendientes; el resultado funcional de Robo es correcto. No comparar
+directamente con las 34 de build 4: esta exploración visitó menos pantallas.
