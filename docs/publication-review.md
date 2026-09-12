@@ -1,6 +1,7 @@
 # SSHBond — revisión de publicación
 
-Actualizado: 6 de septiembre de 2026.
+Actualizado: 12 de septiembre de 2026. Las secciones iniciales conservan el
+historial; consultar la actualización de producción al final para el estado actual.
 
 ## Resultado
 
@@ -170,3 +171,41 @@ de vulnerabilidades. El audit npm no cubre dependencias Kotlin/C/Swift.
 4. Cerrar las omisiones del inventario de atribuciones y comprobar las licencias
    de las dependencias nativas finales. Precio gratuito y España/Francia ya
    configurados. Pruebas internas activas y beta cerrada en revisión.
+
+## Producción — 12 de septiembre de 2026
+
+El titular validó las correcciones en TestFlight y autorizó publicar en producción.
+Apple confirmó `WAITING_FOR_REVIEW` para 1.0.0 (13), con publicación automática
+tras aprobación (`AFTER_APPROVAL`). La app aún no está publicada al guardar este
+estado. Se mantiene España disponible y Francia excluida temporalmente de iOS.
+
+- Versión Apple: `7a77ea31-b560-4725-9938-dfa9f15cf5c3`.
+- Build Apple: `3f5bf390-bc10-4dca-95c9-3b867a6f875f`.
+- Revisión: `7419926d-1f6d-4620-8e4b-993ae7c8e366`.
+- EAS iOS: `871bafeb-90ab-41bc-a6f3-89b059435d2f`.
+- IPA SHA-256: `cea15579a7ab517a5827667a6d8f99090ea3ac41d7e59eb44a72d05021bac695`.
+- Capturas auténticas del simulador iPhone 1320×2868 e iPad 2064×2752,
+  revisadas visualmente y aceptadas (`COMPLETE`) en en-US, es-ES y fr-FR.
+  Solo se utilizaron las capturas de Hosts: las de navegación por URL mostraban
+  un diálogo del sistema y se descartaron. EAS de capturas:
+  `24345a15-4dff-4384-883d-fb75461a7c3c`.
+- Datos de contacto/revisión verificados, credenciales de demo coincidentes y
+  comando SSH real con clave y huella estricta correcto.
+- TypeScript, lint y 169 pruebas / 16 suites correctos. Motor Android contra
+  OpenSSH correcto; hash de SSHBondSession.kt del contenedor idéntico al actual.
+- Licencias suplementarias npm incluidas y exclusiones restantes verificadas
+  contra ambos mapas de fuentes Hermes. CocoaPods añade sus avisos resueltos
+  antes de empaquetar iOS; se comprobó su presencia en el IPA final.
+- Android 1.0.0 (6) compilado en EAS:
+  `3b30c2c1-2a17-4811-97b8-dd6494893d21`. ZIP íntegro, 88 bibliotecas nativas,
+  todos los segmentos LOAD de 64 bits alineados a 16 KB o más.
+  SHA-256: `eb0038833583a6c05b42df3d9384ef5a4487e023b74d77ec8ed250ad4dd4f766`.
+  En preparación para Firebase y Google Play; no se ha instalado el SDK Android.
+- Google Play validó API mínima 24 / objetivo 36 y los símbolos nativos del AAB.
+  Una advertencia no bloqueante indica que no hay mapa de desofuscación.
+  El panel también advierte de optimización/ofuscación baja (1 %), con fecha
+  límite febrero de 2027; planificar R8 y sus pruebas antes de ese plazo.
+  Producción mantiene España y Francia. Publicación gestionada desactivada.
+- Firebase de build 6: matriz `matrix-pmktg93ditt7a`, Pixel 5 / API 30, en_US,
+  vertical, límite cinco minutos. Resultado pendiente al guardar esta entrada:
+  https://console.firebase.google.com/project/yogabond-studio/testlab/histories/bh.edc211f887b03ef2/matrices/7199629988528755821

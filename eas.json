@@ -45,7 +45,8 @@
         "SSHBOND_HANDSHAKE_PROBE": "1"
       },
       "buildArtifactPaths": [
-        "output/release-evidence/**"
+        "output/release-evidence/**",
+        "eas.json"
       ]
     },
     "handshake-probe": {
