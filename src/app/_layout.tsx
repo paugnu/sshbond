@@ -71,7 +71,8 @@ function RootLayoutContent() {
     <View style={styles.root}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       {hasUnlocked && <View
-        style={[styles.root, lockState !== 'unlocked' && { display: 'none' }]}
+        style={[styles.root, lockState !== 'unlocked' && { opacity: 0 }]}
+        pointerEvents={lockState === 'unlocked' ? 'auto' : 'none'}
         accessibilityElementsHidden={lockState !== 'unlocked'}
         importantForAccessibility={lockState !== 'unlocked' ? 'no-hide-descendants' : 'auto'}
       >
