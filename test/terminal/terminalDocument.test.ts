@@ -4,7 +4,7 @@ import { buildTerminalHtml } from '../../src/features/terminal/terminalDocument'
 import { terminalPalettes } from '../../src/theme/colors';
 
 it('does not resize the remote PTY while hidden and refits on return', () => {
-  const element = { clientWidth: 800, clientHeight: 600 };
+  const element = { clientWidth: 800, clientHeight: 600, querySelector: () => null };
   const events: Record<string, () => void> = {};
   const messages: any[] = [];
   let term: any;

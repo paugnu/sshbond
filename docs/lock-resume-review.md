@@ -42,3 +42,6 @@ SHA-256: `7adedcd08e69cfa55bf1a14fb85bb562ac0804485fd6fdd162d5b10e444a8160`.
 User reports the symptom also occurs with a 5–10 second lock. Await the same
 physical-device check with build 11; the cause is a code-supported hypothesis,
 not yet a confirmed reproduction on the user's iPhone. Production remains paused.
+
+The user subsequently confirmed that lock/resume works correctly in build 11.
+The next reported issue concerns touch scrolling, tracked in touch-scroll-review.md.

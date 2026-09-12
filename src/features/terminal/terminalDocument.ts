@@ -1,3 +1,4 @@
+import { TOUCH_SCROLL_JS } from './touchScroll';
 import { TerminalPalette } from '../../theme/colors';
 import { XTERM_CSS, XTERM_FIT_ADDON_JS, XTERM_JS } from './xtermAssets';
 
@@ -58,6 +59,7 @@ export function buildTerminalHtml(options: {
   <script>${XTERM_JS}</script>
   <script>${XTERM_FIT_ADDON_JS}</script>
   <script>
+    ${TOUCH_SCROLL_JS}
     (function () {
       var post = function (message) {
         window.ReactNativeWebView.postMessage(JSON.stringify(message));
@@ -67,6 +69,7 @@ export function buildTerminalHtml(options: {
       var fitAddon = new FitAddon.FitAddon();
       term.loadAddon(fitAddon);
       term.open(document.getElementById('terminal'));
+      installTouchScroll(term, document.getElementById('terminal'));
 
       var fit = function () {
         var element = document.getElementById('terminal');
