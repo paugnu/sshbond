@@ -52,7 +52,10 @@
       },
       "ios": {
         "appleTeamId": "W543Q9Q8K5",
-        "ascAppId": "6809179913"
+        "ascAppId": "6809179913",
+        "groups": [
+          "Pruebas internas"
+        ]
       }
     }
   }

@@ -15,6 +15,7 @@ export default function NewHostScreen() {
   return (
     <HostEditor
       onSave={handleSave}
+      onImportComplete={() => router.back()}
       onCancel={() => router.back()}
     />
   );

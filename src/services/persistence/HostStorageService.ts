@@ -7,6 +7,7 @@ import {
 } from '@/domain/models/sshConfig';
 import { SecureStorageService } from '../secureStorage/SecureStorageService';
 import { JsonFileStore } from './JsonFileStore';
+import { SSHConfigParser } from '../ssh/config/SSHConfigParser';
 
 export interface AppSettings {
   theme: 'system' | 'dark' | 'light';
@@ -170,6 +171,30 @@ export class HostStorageService {
     }
 
     await JsonFileStore.write(DOCS.HOSTS, this.hosts);
+  }
+
+  /** Import every alias using the same merge rules from every entry point. */
+  public static async importConfig(text: string): Promise<{ created: number; updated: number }> {
+    const parsed = SSHConfigParser.parse(text);
+    if (!parsed.hosts.length) throw new Error('No valid SSH Host declarations found.');
+    await this.init();
+    const hosts = [...this.hosts];
+    const byAlias = new Map(hosts.map((host, index) => [host.alias, index]));
+    let created = 0;
+    let updated = 0;
+    for (const host of parsed.hosts) {
+      const index = byAlias.get(host.alias);
+      const current = index === undefined ? undefined : hosts[index];
+      const merged = current ? {
+        ...host, id: current.id, groupId: current.groupId, tags: current.tags,
+        favorite: current.favorite, identityId: current.identityId, createdAt: current.createdAt,
+      } : host;
+      if (index !== undefined) { hosts[index] = merged; updated++; }
+      else { byAlias.set(host.alias, hosts.length); hosts.push(merged); created++; }
+    }
+    await JsonFileStore.write(DOCS.HOSTS, hosts);
+    this.hosts = hosts;
+    return { created, updated };
   }
 
   public static async deleteHost(id: string): Promise<void> {

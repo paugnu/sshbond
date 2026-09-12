@@ -1,10 +1,10 @@
+import { FormInput as TextInput, FormScrollView as ScrollView } from '../../features/common/FormControls';
+import { DismissKeyboardButton } from '../../features/common/KeyboardAwareModal';
 import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
-  ScrollView,
   StyleSheet,
   Alert,
   Modal,
@@ -183,10 +183,11 @@ export default function HostsScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+      <ScrollView automaticallyAdjustKeyboardInsets style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         {/* Quick Connect Bar */}
         <QuickConnectBar onConnect={handleQuickConnect} onSave={handleQuickSave} />
 
+        <DismissKeyboardButton color={colors.primary} />
         {/* Search Bar */}
         <View style={[styles.searchBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Search size={16} color={colors.textMuted} />
@@ -243,6 +244,9 @@ export default function HostsScreen() {
           </ScrollView>
         )}
 
+        <Text style={{ color: colors.textMuted, fontSize: 12, marginBottom: 12 }}>
+          Swipe left on a host to edit or delete it.
+        </Text>
         {/* Favorites */}
         {favorites.length > 0 && (
           <View>

@@ -1,18 +1,17 @@
+import { FormInput as TextInput, FormScrollView as ScrollView } from '../common/FormControls';
 import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   Modal,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert,
 } from 'react-native';
-import { ModalOverlay, DismissKeyboardButton } from '../common/KeyboardAwareModal';
+import { ModalOverlay } from '../common/KeyboardAwareModal';
 import { useTheme } from '../../theme/ThemeContext';
 import { HostStorageService } from '../../services/persistence/HostStorageService';
 import { SSHConfigSerializer } from '../../services/ssh/config/SSHConfigSerializer';
-import { SSHConfigParser } from '../../services/ssh/config/SSHConfigParser';
 import { Download, Upload, Copy, X, Check } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
@@ -34,6 +33,7 @@ export const ConfigImportExportModal: React.FC<ConfigImportExportModalProps> = (
   const [tab, setTab] = useState<'import' | 'export'>(initialMode);
   const [configText, setConfigText] = useState('');
   const [copied, setCopied] = useState(false);
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     setTab(initialMode);
@@ -62,42 +62,11 @@ export const ConfigImportExportModal: React.FC<ConfigImportExportModalProps> = (
   };
 
   const handleImport = async () => {
-    if (!configText.trim()) return;
+    if (!configText.trim() || importing) return;
+    setImporting(true);
 
     try {
-      const result = SSHConfigParser.parse(configText);
-      if (result.hosts.length === 0) {
-        Alert.alert('Import Failed', 'No valid SSH Host declarations found in the provided text.');
-        return;
-      }
-
-      // Re-importing the same config previously created a second copy of every
-      // host, because the parser mints a fresh id on each run. Match on alias
-      // instead and update in place.
-      const existing = await HostStorageService.getHosts();
-      const byAlias = new Map(existing.map(h => [h.alias, h]));
-
-      let created = 0;
-      let updated = 0;
-
-      for (const parsedHost of result.hosts) {
-        const current = byAlias.get(parsedHost.alias);
-        if (current) {
-          await HostStorageService.saveHost({
-            ...parsedHost,
-            id: current.id,
-            groupId: current.groupId,
-            tags: current.tags,
-            favorite: current.favorite,
-            identityId: current.identityId,
-            createdAt: current.createdAt,
-          });
-          updated++;
-        } else {
-          await HostStorageService.saveHost(parsedHost);
-          created++;
-        }
-      }
+      const { created, updated } = await HostStorageService.importConfig(configText);
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert(
@@ -113,6 +82,8 @@ export const ConfigImportExportModal: React.FC<ConfigImportExportModalProps> = (
       onClose();
     } catch (err: any) {
       Alert.alert('Parser Error', err?.message || 'Failed to parse OpenSSH configuration.');
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -131,7 +102,7 @@ export const ConfigImportExportModal: React.FC<ConfigImportExportModalProps> = (
               >
                 <Upload size={14} color={tab === 'export' ? colors.primary : colors.textMuted} />
                 <Text style={[styles.tabText, { color: tab === 'export' ? colors.text : colors.textMuted }]}>
-                  Export Config
+                  Export
                 </Text>
               </TouchableOpacity>
 
@@ -144,20 +115,19 @@ export const ConfigImportExportModal: React.FC<ConfigImportExportModalProps> = (
               >
                 <Download size={14} color={tab === 'import' ? colors.primary : colors.textMuted} />
                 <Text style={[styles.tabText, { color: tab === 'import' ? colors.text : colors.textMuted }]}>
-                  Import Config
+                  Import
                 </Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.headerActions}>
-              <DismissKeyboardButton color={colors.primary} />
-              <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+              <TouchableOpacity accessibilityLabel="Close config dialog" accessibilityRole="button" onPress={onClose} style={styles.closeBtn}>
                 <X size={18} color={colors.textMuted} />
               </TouchableOpacity>
             </View>
           </View>
 
-          <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+          <ScrollView style={{ flexShrink: 1 }}><Text style={[styles.subtitle, { color: colors.textMuted }]}>
             {tab === 'export'
               ? 'Standard OpenSSH ~/.ssh/config format export. Private keys are never included.'
               : 'Paste standard OpenSSH config directives (e.g. Host, HostName, User, ProxyJump, etc.):'}
@@ -182,6 +152,7 @@ export const ConfigImportExportModal: React.FC<ConfigImportExportModalProps> = (
             editable={tab === 'import'}
           />
 
+          </ScrollView>
           <View style={styles.footer}>
             {tab === 'export' ? (
               <TouchableOpacity
@@ -195,10 +166,10 @@ export const ConfigImportExportModal: React.FC<ConfigImportExportModalProps> = (
               <TouchableOpacity
                 style={[styles.actionButton, { backgroundColor: colors.primary }]}
                 onPress={handleImport}
-                disabled={!configText.trim()}
+                disabled={importing || !configText.trim()}
               >
                 <Download size={16} color="#ffffff" />
-                <Text style={styles.actionBtnText}>Parse & Import Hosts</Text>
+                <Text style={styles.actionBtnText}>{importing ? 'Importing…' : 'Parse & Import Hosts'}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -213,22 +184,27 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   card: {
-    maxHeight: '90%',
+    maxHeight: '100%',
+    flexShrink: 1,
     borderRadius: 12,
     borderWidth: 1,
     padding: 18,
   },
   header: {
     flexDirection: 'row',
+    gap: 8,
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 8,
   },
   tabRow: {
+    flex: 1,
     flexDirection: 'row',
-    gap: 16,
+    gap: 8,
   },
   tabBtn: {
+    flex: 1,
+    minHeight: 48,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -237,6 +213,7 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   tabText: {
+    flexShrink: 1,
     fontSize: 14,
     fontWeight: '700',
   },
@@ -244,10 +221,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
-    paddingBottom: 8,
   },
   closeBtn: {
-    padding: 4,
+    minWidth: 48,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   subtitle: {
     fontSize: 12,
@@ -259,7 +238,7 @@ const styles = StyleSheet.create({
     // never pushed out of reach.
     flexShrink: 1,
     minHeight: 120,
-    height: 300,
+    height: 220,
     borderWidth: 1,
     borderRadius: 8,
     padding: 12,

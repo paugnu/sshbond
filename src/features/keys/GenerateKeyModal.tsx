@@ -1,9 +1,9 @@
+import { FormInput as TextInput, FormScrollView as ScrollView } from '../common/FormControls';
 import React, { useState } from 'react';
 import {
   View,
   Text,
   Modal,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
@@ -91,6 +91,7 @@ export const GenerateKeyModal: React.FC<GenerateKeyModalProps> = ({ visible, onC
             </TouchableOpacity>
           </View>
 
+          <ScrollView style={{ flexShrink: 1 }}>
           <Text style={[styles.label, { color: colors.textMuted }]}>Key Name</Text>
           <TextInput
             style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
@@ -167,6 +168,7 @@ export const GenerateKeyModal: React.FC<GenerateKeyModalProps> = ({ visible, onC
             <Switch value={requireBiometrics} onValueChange={setRequireBiometrics} />
           </View>
 
+          </ScrollView>
           <TouchableOpacity
             style={[
               styles.genButton,
@@ -192,6 +194,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   card: {
+    maxHeight: '100%',
+    flexShrink: 1,
     borderRadius: 12,
     borderWidth: 1,
     padding: 20,
@@ -203,11 +207,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   titleRow: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
   title: {
+    flexShrink: 1,
     fontSize: 17,
     fontWeight: '700',
   },

@@ -1,5 +1,6 @@
+import { FormInput as TextInput } from '../common/FormControls';
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../../theme/ThemeContext';
 import { Zap, Plus } from 'lucide-react-native';
 

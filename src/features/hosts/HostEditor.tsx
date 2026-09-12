@@ -1,14 +1,18 @@
+import { useHeaderHeight } from '@react-navigation/elements';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { DismissKeyboardButton } from '../common/KeyboardAwareModal';
+import { FormInput as TextInput, FormScrollView as ScrollView } from '../common/FormControls';
 import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
-  ScrollView,
   StyleSheet,
   Switch,
   Alert,
   Platform,
+  KeyboardAvoidingView,
+  Keyboard,
 } from 'react-native';
 import { SSHHost, SSHIdentity, SSHGroup, SSHAuthType } from '@/domain/models/sshConfig';
 import { useTheme } from '../../theme/ThemeContext';
@@ -42,6 +46,7 @@ const STRICT_HOST_KEY_HINTS: Record<string, string> = {
 interface HostEditorProps {
   initialHost?: SSHHost;
   onSave: (host: SSHHost) => Promise<void>;
+  onImportComplete?: () => void;
   onDelete?: (id: string) => Promise<void>;
   onCancel: () => void;
 }
@@ -49,10 +54,14 @@ interface HostEditorProps {
 export const HostEditor: React.FC<HostEditorProps> = ({
   initialHost,
   onSave,
+  onImportComplete,
   onDelete,
   onCancel,
 }) => {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
+  const [saving, setSaving] = useState(false);
 
   // Mode: Form vs Raw Config
   const [mode, setMode] = useState<'form' | 'raw'>('form');
@@ -163,6 +172,10 @@ export const HostEditor: React.FC<HostEditorProps> = ({
   const handleSwitchToForm = () => {
     try {
       const parsed = SSHConfigParser.parse(rawConfigText);
+      if (parsed.hosts.length !== 1) {
+        Alert.alert('Keep all hosts', 'Stay in Config mode to import multiple hosts. The form edits one host at a time.');
+        return;
+      }
       if (parsed.hosts.length > 0) {
         const h = parsed.hosts[0];
         setAlias(h.alias);
@@ -188,30 +201,32 @@ export const HostEditor: React.FC<HostEditorProps> = ({
   };
 
   const handleSave = async () => {
-    if (mode === 'raw') {
-      try {
+    if (saving) return;
+    Keyboard.dismiss();
+    setSaving(true);
+    try {
+      if (mode === 'raw') {
         const parsed = SSHConfigParser.parse(rawConfigText);
-        if (parsed.hosts.length > 0) {
-          const host = {
-            ...parsed.hosts[0],
-            id: initialHost?.id || `host_${Date.now()}`,
-          };
-          await onSave(host);
-          return;
+        if (!parsed.hosts.length) throw new Error('No valid SSH Host declarations found.');
+        if (!initialHost) {
+          const result = await HostStorageService.importConfig(rawConfigText);
+          Alert.alert('Import Successful', `${result.created} hosts added, ${result.updated} updated.`);
+          onImportComplete?.();
+        } else {
+          if (parsed.hosts.length !== 1) throw new Error('This screen edits one host. Use Add Host or Settings to import a configuration with multiple hosts.');
+          await onSave({ ...parsed.hosts[0], id: initialHost.id, groupId: initialHost.groupId,
+            tags: initialHost.tags, favorite: initialHost.favorite, identityId: initialHost.identityId,
+            createdAt: initialHost.createdAt });
         }
-      } catch {
-        Alert.alert('Configuration Error', 'Unable to parse OpenSSH configuration.');
         return;
       }
+      if (!alias.trim() && !hostname.trim()) throw new Error('Please provide a Host Alias or Hostname.');
+      await onSave(buildCurrentHost());
+    } catch (error) {
+      Alert.alert('Unable to save', error instanceof Error ? error.message : 'Please try again.');
+    } finally {
+      setSaving(false);
     }
-
-    if (!alias.trim() && !hostname.trim()) {
-      Alert.alert('Missing Details', 'Please provide a Host Alias or Hostname.');
-      return;
-    }
-
-    const host = buildCurrentHost();
-    await onSave(host);
   };
 
   /**
@@ -256,7 +271,8 @@ export const HostEditor: React.FC<HostEditorProps> = ({
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <KeyboardAvoidingView style={[styles.container, { backgroundColor: colors.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={headerHeight}>
       {/* Top Switcher */}
       <View style={[styles.modeBar, { backgroundColor: colors.surfaceSubtle, borderColor: colors.border }]}>
         <TouchableOpacity
@@ -735,12 +751,19 @@ export const HostEditor: React.FC<HostEditorProps> = ({
         )}
       </ScrollView>
 
+      <DismissKeyboardButton color={colors.primary} />
       {/* Footer Action Buttons */}
-      <View style={[styles.footer, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+      <View style={[styles.footer, { backgroundColor: colors.surface, borderTopColor: colors.border, paddingBottom: Math.max(insets.bottom, 12) }]}>
         {initialHost && onDelete && (
           <TouchableOpacity
             style={[styles.actionBtn, styles.deleteBtn, { borderColor: colors.error }]}
-            onPress={() => onDelete(initialHost.id)}
+            accessibilityLabel="Delete host"
+            onPress={() => Alert.alert('Delete Host', `Remove "${initialHost.alias}"?`, [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Delete', style: 'destructive', onPress: () => {
+                onDelete(initialHost.id).catch(() => Alert.alert('Unable to delete', 'Please try again.'));
+              } },
+            ])}
           >
             <Trash2 size={16} color={colors.error} />
           </TouchableOpacity>
@@ -756,12 +779,13 @@ export const HostEditor: React.FC<HostEditorProps> = ({
         <TouchableOpacity
           style={[styles.actionBtn, styles.saveBtn, { backgroundColor: colors.primary }]}
           onPress={handleSave}
+          disabled={saving}
         >
           <Save size={16} color="#ffffff" />
-          <Text style={[styles.actionBtnText, { color: '#ffffff' }]}>Save Host</Text>
+          <Text style={[styles.actionBtnText, { color: '#ffffff' }]}>{saving ? 'Saving…' : mode === 'raw' && !initialHost ? 'Import Hosts' : 'Save Host'}</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -787,6 +811,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   modeBtnText: {
+    flexShrink: 1,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -805,7 +830,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   rawInput: {
-    height: 360,
+    height: 200,
     borderWidth: 1,
     borderRadius: 10,
     padding: 12,
@@ -935,8 +960,8 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
   },
   addBtn: {
-    width: 36,
-    height: 36,
+    width: 48,
+    height: 48,
     borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
@@ -964,6 +989,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   footer: {
+    flexWrap: 'wrap',
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
@@ -972,6 +998,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   actionBtn: {
+    minHeight: 48,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
@@ -988,6 +1015,7 @@ const styles = StyleSheet.create({
   },
   saveBtn: {},
   actionBtnText: {
+    flexShrink: 1,
     fontSize: 13,
     fontWeight: '600',
   },

@@ -15,6 +15,7 @@ interface TerminalViewProps {
 
 export interface TerminalHandle {
   focus: () => void;
+  blur: () => void;
   clear: () => void;
   /** Re-measures the grid, after the view's own height has changed. */
   fit: () => void;
@@ -103,6 +104,7 @@ function buildTerminalHtml(options: {
       window.writeTerminal = function (chunk) { term.write(chunk); };
       window.clearTerminal = function () { term.clear(); };
       window.focusTerminal = function () { term.focus(); };
+      window.blurTerminal = function () { term.blur(); };
       window.fitTerminal = fit;
 
       // Tells React Native the emulator is live and safe to write to.
@@ -153,6 +155,7 @@ export const TerminalView = React.forwardRef<TerminalHandle, TerminalViewProps>(
 
     React.useImperativeHandle(ref, () => ({
       focus: () => webViewRef.current?.injectJavaScript('window.focusTerminal(); true;'),
+      blur: () => webViewRef.current?.injectJavaScript('window.blurTerminal(); true;'),
       clear: () => webViewRef.current?.injectJavaScript('window.clearTerminal(); true;'),
       // The WebView refits itself when the page resizes, but a native frame
       // change -- the keyboard opening under it -- does not always reach the

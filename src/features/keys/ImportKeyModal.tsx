@@ -1,17 +1,19 @@
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system/legacy';
+import { FormInput as TextInput, FormScrollView as ScrollView } from '../common/FormControls';
 import React, { useState } from 'react';
 import {
   View,
   Text,
   Modal,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  ScrollView,
   Switch,
   Alert,
+  Keyboard,
 } from 'react-native';
-import { ModalOverlay, DismissKeyboardButton } from '../common/KeyboardAwareModal';
+import { ModalOverlay } from '../common/KeyboardAwareModal';
 import { useTheme } from '../../theme/ThemeContext';
 import { SSHKeyManager } from '@/services/ssh/keys/SSHKeyManager';
 import { HostStorageService } from '@/services/persistence/HostStorageService';
@@ -40,8 +42,32 @@ export const ImportKeyModal: React.FC<ImportKeyModalProps> = ({ visible, onClose
     setRequireBiometrics(false);
   };
 
+  const loadKeyFile = async (kind: 'private' | 'public') => {
+    Keyboard.dismiss();
+    try {
+      const result = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: true });
+      if (result.canceled) return;
+      const file = result.assets[0];
+      try {
+        if (file.size && file.size > 128 * 1024) throw new Error('Select an SSH key file smaller than 128 KB.');
+        const text = await FileSystem.readAsStringAsync(file.uri);
+        if (text.length > 128 * 1024) throw new Error('This file is too large to be an SSH key.');
+        if (kind === 'private') setPrivateKeyPem(text); else setPublicKeyStr(text);
+        if (!name.trim()) setName(file.name.replace(/\.pub$/, ''));
+      } finally {
+        // The picker creates a temporary copy; do not leave private material in cache.
+        if (FileSystem.cacheDirectory && file.uri.startsWith(FileSystem.cacheDirectory)) {
+          await FileSystem.deleteAsync(file.uri, { idempotent: true });
+        }
+      }
+    } catch (error) {
+      Alert.alert('Unable to read key', error instanceof Error ? error.message : 'Choose a text key file.');
+    }
+  };
+
   const handleImport = async () => {
     if (!name.trim() || !privateKeyPem.trim()) return;
+    Keyboard.dismiss();
     setLoading(true);
 
     try {
@@ -125,7 +151,6 @@ export const ImportKeyModal: React.FC<ImportKeyModalProps> = ({ visible, onClose
               <Text style={[styles.title, { color: colors.text }]}>Import SSH Key</Text>
             </View>
             <View style={styles.headerActions}>
-              <DismissKeyboardButton color={colors.primary} />
               <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close key dialog" style={{ minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' }} onPress={onClose}>
                 <X size={20} color={colors.textMuted} />
               </TouchableOpacity>
@@ -145,8 +170,12 @@ export const ImportKeyModal: React.FC<ImportKeyModalProps> = ({ visible, onClose
             />
 
             <Text style={[styles.label, { color: colors.textMuted }]}>Private Key (OpenSSH or PEM)</Text>
+            <TouchableOpacity style={styles.fileButton} accessibilityRole="button" onPress={() => loadKeyFile('private')}>
+              <Text style={{ color: colors.primary }}>Choose private key file</Text>
+            </TouchableOpacity>
             <TextInput
               style={[styles.textArea, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
+              accessibilityLabel="Private key"
               value={privateKeyPem}
               onChangeText={setPrivateKeyPem}
               placeholder={'-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----'}
@@ -159,8 +188,12 @@ export const ImportKeyModal: React.FC<ImportKeyModalProps> = ({ visible, onClose
             <Text style={[styles.label, { color: colors.textMuted }]}>
               Public Key (optional — derived automatically when possible)
             </Text>
+            <TouchableOpacity style={styles.fileButton} accessibilityRole="button" onPress={() => loadKeyFile('public')}>
+              <Text style={{ color: colors.primary }}>Choose public key (.pub) file</Text>
+            </TouchableOpacity>
             <TextInput
-              style={[styles.textArea, { height: 60, backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
+              accessibilityLabel="Public key"
+              style={[styles.textArea, { height: 120, backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
               value={publicKeyStr}
               onChangeText={setPublicKeyStr}
               placeholder="ssh-ed25519 AAAAC3... user@example.com"
@@ -183,11 +216,11 @@ export const ImportKeyModal: React.FC<ImportKeyModalProps> = ({ visible, onClose
             <View style={[styles.notice, { backgroundColor: colors.surfaceSubtle }]}>
               <Lock size={13} color={colors.textMuted} />
               <Text style={[styles.noticeText, { color: colors.textMuted }]}>
-                The private key is written straight to the device keychain. It is never copied
-                anywhere else and never leaves the device.
+                The private key is written straight to the device keychain. Temporary import files are removed after reading. Your keys never leave the device.
               </Text>
             </View>
 
+          </ScrollView>
             <TouchableOpacity
               style={[
                 styles.importButton,
@@ -202,7 +235,6 @@ export const ImportKeyModal: React.FC<ImportKeyModalProps> = ({ visible, onClose
                 <Text style={styles.importBtnText}>Import into Secure Storage</Text>
               )}
             </TouchableOpacity>
-          </ScrollView>
         </View>
       </ModalOverlay>
     </Modal>
@@ -219,12 +251,14 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   card: {
-    maxHeight: '85%',
+    maxHeight: '100%',
+    flexShrink: 1,
     borderRadius: 12,
     borderWidth: 1,
     padding: 20,
   },
   scroll: {
+    flexShrink: 1,
     flexGrow: 0,
   },
   header: {
@@ -234,11 +268,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   titleRow: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
   title: {
+    flexShrink: 1,
     fontSize: 17,
     fontWeight: '700',
   },
@@ -248,6 +284,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     marginTop: 10,
   },
+  fileButton: { minHeight: 48, justifyContent: 'center' },
   input: {
     minHeight: 48,
     borderWidth: 1,

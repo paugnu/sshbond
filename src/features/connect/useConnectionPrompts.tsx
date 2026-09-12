@@ -1,5 +1,7 @@
+import { ModalOverlay } from '../common/KeyboardAwareModal';
+import { FormInput as TextInput, FormScrollView } from '../common/FormControls';
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, Modal, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 import { ShieldAlert, ShieldQuestion, KeyRound } from 'lucide-react-native';
 import { useTheme } from '../../theme/ThemeContext';
 import { ConnectOptions, HostKeyChallenge } from '@/services/ssh/SSHClient';
@@ -70,8 +72,8 @@ export function useConnectionPrompts(): {
   const prompts = (
     <>
       <Modal visible={hostKey !== null} transparent animationType="fade" onRequestClose={() => answerHostKey(false)}>
-        <View style={styles.overlay}>
-          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <ModalOverlay style={styles.overlay}>
+          <FormScrollView style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             {hostKey?.challenge.isMismatch ? (
               <>
                 <View style={styles.header}>
@@ -119,13 +121,13 @@ export function useConnectionPrompts(): {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
+          </FormScrollView>
+        </ModalOverlay>
       </Modal>
 
       <Modal visible={secret !== null} transparent animationType="fade" onRequestClose={() => answerSecret(null)}>
-        <View style={styles.overlay}>
-          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <ModalOverlay style={styles.overlay}>
+          <FormScrollView style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.header}>
               <KeyRound size={20} color={colors.primary} />
               <Text style={[styles.title, { color: colors.text }]}>{secret?.title}</Text>
@@ -160,8 +162,8 @@ export function useConnectionPrompts(): {
                 <Text style={[styles.buttonText, { color: '#ffffff' }]}>Continue</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
+          </FormScrollView>
+        </ModalOverlay>
       </Modal>
     </>
   );
@@ -197,6 +199,9 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   card: {
+    flexGrow: 0,
+    flexShrink: 1,
+    maxHeight: '100%',
     width: '100%',
     maxWidth: 460,
     borderRadius: 12,

@@ -8,6 +8,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
 import { useKeyboardVisible } from '../../features/common/KeyboardAwareModal';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -237,6 +238,7 @@ export default function TerminalScreen() {
 
       <TerminalKeyboardToolbar
         onSendKey={handleSendKey}
+        onHideKeyboard={keyboardVisible ? () => { terminalRef.current?.blur(); Keyboard.dismiss(); } : undefined}
         hapticFeedback={settings?.hapticFeedback !== false}
       />
       </KeyboardAvoidingView>

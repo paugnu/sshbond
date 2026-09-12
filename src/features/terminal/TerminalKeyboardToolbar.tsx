@@ -6,10 +6,12 @@ import { useTheme } from '../../theme/ThemeContext';
 interface TerminalKeyboardToolbarProps {
   onSendKey: (keyData: string) => void;
   hapticFeedback?: boolean;
+  onHideKeyboard?: () => void;
 }
 
 export const TerminalKeyboardToolbar: React.FC<TerminalKeyboardToolbarProps> = ({
   onSendKey,
+  onHideKeyboard,
   hapticFeedback = true,
 }) => {
   const { colors } = useTheme();
@@ -82,7 +84,7 @@ export const TerminalKeyboardToolbar: React.FC<TerminalKeyboardToolbarProps> = (
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surfaceSubtle, borderTopColor: colors.border }]}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView keyboardShouldPersistTaps="always" horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {quickKeys.map((item, idx) => {
           const isActive = item.isToggle && item.active;
           return (
@@ -107,13 +109,18 @@ export const TerminalKeyboardToolbar: React.FC<TerminalKeyboardToolbarProps> = (
           );
         })}
       </ScrollView>
+      {onHideKeyboard && <TouchableOpacity onPress={onHideKeyboard} accessibilityRole="button"
+        accessibilityLabel="Hide terminal keyboard" style={{ minWidth: 48, justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ color: colors.text, fontSize: 22 }}>⌄</Text>
+      </TouchableOpacity>}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    height: 44,
+    height: 56,
+    flexDirection: 'row',
     borderTopWidth: 1,
   },
   scrollContent: {
@@ -123,12 +130,12 @@ const styles = StyleSheet.create({
   },
   keyButton: {
     paddingHorizontal: 10,
-    height: 32,
+    height: 48,
     borderRadius: 6,
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    minWidth: 36,
+    minWidth: 48,
   },
   keyText: {
     fontSize: 12,

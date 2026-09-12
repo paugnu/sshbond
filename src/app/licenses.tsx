@@ -1,5 +1,7 @@
+import { FormInput as TextInput } from '../features/common/FormControls';
+import { DismissKeyboardButton } from '../features/common/KeyboardAwareModal';
 import React, { useState } from 'react';
-import { FlatList, ScrollView, Text, TextInput, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { FlatList, ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 import { useTheme } from '../theme/ThemeContext';
 import notices from '../generated/licenseNotices.json';
@@ -26,7 +28,8 @@ export default function LicensesScreen() {
           <TextInput accessibilityLabel="Search open-source licenses" placeholder="Search libraries" placeholderTextColor={colors.textSubtle}
             value={query} onChangeText={setQuery} autoCapitalize="none" autoCorrect={false}
             style={[styles.search, { color: colors.text, borderColor: colors.border }]} />
-          <FlatList data={notices.filter(n => n.name.toLowerCase().includes(query.toLowerCase()))}
+          <DismissKeyboardButton color={colors.primary} />
+          <FlatList automaticallyAdjustKeyboardInsets keyboardDismissMode="on-drag" keyboardShouldPersistTaps="handled" data={notices.filter(n => n.name.toLowerCase().includes(query.toLowerCase()))}
             keyExtractor={n => n.name} contentContainerStyle={styles.content}
             renderItem={({ item }) => (
               <TouchableOpacity accessibilityRole="button" onPress={() => setSelected(item)} style={[styles.button, { borderBottomColor: colors.border, borderBottomWidth: 1 }]}>

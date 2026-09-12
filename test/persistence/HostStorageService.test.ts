@@ -172,3 +172,36 @@ describe('HostStorageService', () => {
     expect(settings.cursorStyle).toBe('block');
   });
 });
+
+describe('bulk config import', () => {
+  beforeEach(async () => {
+    FileSystemMock.__reset();
+    jest.clearAllMocks();
+    SecureStoreMock.getItemAsync.mockResolvedValue(null);
+    await HostStorageService.reset();
+  });
+
+  it('imports every host and updates matching aliases without losing local metadata', async () => {
+    await HostStorageService.saveHost(makeHost({ identityId: 'id_local', favorite: true, groupId: 'group_prod', tags: ['keep'] }));
+    const config = 'Host web-prod\n HostName changed.example.com\n User deploy\nHost db\n HostName db.example.com\n User postgres\nHost cache\n HostName cache.example.com';
+    expect(await HostStorageService.importConfig(config)).toEqual({ created: 2, updated: 1 });
+    await HostStorageService.reset();
+    const hosts = await HostStorageService.getHosts();
+    expect(hosts.map(h => h.alias)).toEqual(['web-prod', 'db', 'cache']);
+    expect(hosts[0]).toMatchObject({ id: 'host_1', hostname: 'changed.example.com', identityId: 'id_local', favorite: true, groupId: 'group_prod', tags: ['keep'] });
+    expect(await HostStorageService.importConfig(config)).toEqual({ created: 0, updated: 3 });
+    expect(await HostStorageService.getHosts()).toHaveLength(3);
+  });
+
+  it('does not publish a partial import when writing fails', async () => {
+    await HostStorageService.saveHost(makeHost());
+    FileSystemMock.writeAsStringAsync.mockRejectedValueOnce(new Error('disk full'));
+    await expect(HostStorageService.importConfig('Host one\n HostName one.example\nHost two\n HostName two.example')).rejects.toThrow();
+    expect((await HostStorageService.getHosts()).map(h => h.alias)).toEqual(['web-prod']);
+  });
+
+  it('rejects empty input instead of saving a stale form host', async () => {
+    await expect(HostStorageService.importConfig('# nothing to import')).rejects.toThrow('No valid');
+    expect(await HostStorageService.getHosts()).toEqual([]);
+  });
+});

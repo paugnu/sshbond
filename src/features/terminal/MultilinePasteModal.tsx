@@ -1,3 +1,4 @@
+import { ModalOverlay } from '../common/KeyboardAwareModal';
 import React from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useTheme } from '../../theme/ThemeContext';
@@ -20,8 +21,8 @@ export const MultilinePasteModal: React.FC<MultilinePasteModalProps> = ({
   const lineCount = text.split('\n').length;
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
-      <View style={styles.overlay}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
+      <ModalOverlay style={styles.overlay}>
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.header}>
             <AlertTriangle size={20} color={colors.warning} />
@@ -54,7 +55,7 @@ export const MultilinePasteModal: React.FC<MultilinePasteModalProps> = ({
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </ModalOverlay>
     </Modal>
   );
 };
@@ -68,6 +69,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   card: {
+    maxHeight: '100%',
+    flexShrink: 1,
     width: '100%',
     maxWidth: 440,
     borderRadius: 12,
@@ -85,6 +88,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   title: {
+    flexShrink: 1,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -93,6 +97,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   previewContainer: {
+    flexShrink: 1,
     maxHeight: 160,
     borderWidth: 1,
     borderRadius: 8,

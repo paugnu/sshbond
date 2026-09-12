@@ -5,7 +5,7 @@ import ReanimatedSwipeable, {
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { SSHHost } from '@/domain/models/sshConfig';
 import { useTheme } from '../../theme/ThemeContext';
-import { Server, Star, ArrowRight, GitBranch, Edit, Trash2 } from 'lucide-react-native';
+import { Server, Star, MoreHorizontal, GitBranch, Edit, Trash2 } from 'lucide-react-native';
 
 interface HostCardProps {
   host: SSHHost;
@@ -25,6 +25,7 @@ export const HostCard: React.FC<HostCardProps> = ({
   onDelete,
 }) => {
   const { colors } = useTheme();
+  const open = useRef(false);
   const swipeable = useRef<SwipeableMethods | null>(null);
 
   /**
@@ -71,14 +72,25 @@ export const HostCard: React.FC<HostCardProps> = ({
       // third action that is not there.
       overshootRight={false}
       friction={2}
-      rightThreshold={40}
+      rightThreshold={32}
+      dragOffsetFromRightEdge={12}
+      onSwipeableWillOpen={() => { open.current = true; }}
+      onSwipeableWillClose={() => { open.current = false; }}
     >
     <TouchableOpacity
       style={[
         styles.card,
         { backgroundColor: colors.surface, borderColor: colors.border },
       ]}
-      onPress={onPress}
+      onPress={() => { if (open.current) swipeable.current?.close(); else onPress(); }}
+      accessibilityRole="button"
+      accessibilityLabel={`${host.alias}, ${host.hostname}`}
+      accessibilityHint="Swipe left for Edit and Delete, or long press for host actions"
+      accessibilityActions={[{ name: 'edit', label: 'Edit host' }, { name: 'delete', label: 'Delete host' }]}
+      onAccessibilityAction={event => {
+        if (event.nativeEvent.actionName === 'edit') runAction(onEdit);
+        if (event.nativeEvent.actionName === 'delete') runAction(onDelete);
+      }}
       onLongPress={onLongPress}
       activeOpacity={0.7}
     >
@@ -129,7 +141,10 @@ export const HostCard: React.FC<HostCardProps> = ({
           />
         </TouchableOpacity>
 
-        <ArrowRight size={16} color={colors.textSubtle} />
+        <TouchableOpacity onPress={onLongPress} accessibilityRole="button"
+          accessibilityLabel={`Actions for ${host.alias}`} style={{ minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' }}>
+          <MoreHorizontal size={20} color={colors.textMuted} />
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
     </ReanimatedSwipeable>
@@ -181,11 +196,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   titleRow: {
+    flexWrap: 'wrap',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
   alias: {
+    flexShrink: 1,
     fontSize: 15,
     fontWeight: '600',
   },
