@@ -30,3 +30,15 @@ input remain and `echo $$` still reports the same shell PID. Repeat with an
 interactive program and multiple lock/unlock cycles. The app must not reconnect
 silently. OS process termination or a server/network disconnect is a separate
 condition and cannot be described as an indefinitely preserved connection.
+
+## Beta 11
+
+EAS build `36ab2263-fb78-4239-9a08-8005d14b77de` completed. The native Swift
+SSH regression also passed before compilation. Submission
+`bccd33a6-46f8-40f1-9993-ceaa178252d3` finished and explicitly reported successful
+processing and distribution of 1.0.0 (11) to internal testers.
+IPA ZIP integrity, version, bundle ID and existing encryption flag verified.
+SHA-256: `7adedcd08e69cfa55bf1a14fb85bb562ac0804485fd6fdd162d5b10e444a8160`.
+User reports the symptom also occurs with a 5–10 second lock. Await the same
+physical-device check with build 11; the cause is a code-supported hypothesis,
+not yet a confirmed reproduction on the user's iPhone. Production remains paused.
