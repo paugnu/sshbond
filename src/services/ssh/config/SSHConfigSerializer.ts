@@ -20,8 +20,11 @@ export class SSHConfigSerializer {
 
     if (host.identityId && identityFileMap && identityFileMap.has(host.identityId)) {
       lines.push(`    IdentityFile ${identityFileMap.get(host.identityId)}`);
-    } else if (host.identityId) {
-      lines.push(`    IdentityFile ~/.ssh/${host.identityId}`);
+    } else if (host.identityFile && !host.identityId) {
+      lines.push(`    IdentityFile ${host.identityFile}`);
+    } else if (host.authenticationType === 'key') {
+      lines.push('    PreferredAuthentications publickey');
+      lines.push('    # Select the stored key in Form Editor; no local key file is exported.');
     }
 
     if (host.proxyJump) {

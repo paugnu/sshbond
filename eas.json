@@ -40,6 +40,18 @@
       "ios": {
         "simulator": false,
         "image": "macos-sequoia-15.6-xcode-26.0"
+      },
+      "env": {
+        "SSHBOND_HANDSHAKE_PROBE": "1"
+      }
+    },
+    "handshake-probe": {
+      "extends": "development-simulator",
+      "env": {
+        "SSHBOND_HANDSHAKE_PROBE": "1"
+      },
+      "ios": {
+        "image": "macos-sequoia-15.6-xcode-26.0"
       }
     }
   },

@@ -144,6 +144,7 @@ export const HostEditor: React.FC<HostEditorProps> = ({
       favorite: initialHost?.favorite || false,
       authenticationType: authType,
       identityId: authType === 'key' ? identityId : undefined,
+      identityFile: initialHost?.identityFile,
       proxyJump: proxyJump.trim() || undefined,
       serverAliveInterval: interval,
       connectTimeout: timeout,
@@ -215,7 +216,7 @@ export const HostEditor: React.FC<HostEditorProps> = ({
         } else {
           if (parsed.hosts.length !== 1) throw new Error('This screen edits one host. Use Add Host or Settings to import a configuration with multiple hosts.');
           await onSave({ ...parsed.hosts[0], id: initialHost.id, groupId: initialHost.groupId,
-            tags: initialHost.tags, favorite: initialHost.favorite, identityId: initialHost.identityId,
+            tags: initialHost.tags, favorite: initialHost.favorite, identityId: parsed.hosts[0].authenticationType === 'key' ? identityId : undefined,
             createdAt: initialHost.createdAt });
         }
         return;
@@ -300,8 +301,13 @@ export const HostEditor: React.FC<HostEditorProps> = ({
         {mode === 'raw' ? (
           <View style={styles.rawSection}>
             <Text style={[styles.rawHint, { color: colors.textMuted }]}>
-              Edit in native OpenSSH ~/.ssh/config format:
+              Edit OpenSSH config. Keys selected in Form Editor stay in secure storage.
             </Text>
+            {authType === 'key' && identityId && (
+              <Text style={[styles.rawHint, { color: colors.text }]}>
+                SSH key: {identities.find(key => key.id === identityId)?.name || 'Selected key'} (stored on this device)
+              </Text>
+            )}
             <TextInput
               style={[
                 styles.rawInput,

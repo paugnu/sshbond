@@ -13,6 +13,8 @@ export interface DynamicForwardRule {
 }
 
 export interface SSHHost {
+  /** Original OpenSSH path; metadata only, never a mobile keystore location. */
+  identityFile?: string;
   id: string;
   alias: string; // e.g. 'web-prod' or 'db' or '*'
   hostname: string; // e.g. 'server.example.com' or '10.0.0.12'

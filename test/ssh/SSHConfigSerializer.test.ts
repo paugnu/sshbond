@@ -32,3 +32,18 @@ describe('SSHConfigSerializer', () => {
     expect(parsed.hosts[0].serverAliveInterval).toBe(60);
   });
 });
+
+it('keeps key authentication without inventing a file for a stored identity', () => {
+  const host = SSHConfigParser.parse('Host demo\n  HostName example.com\n  User demo').hosts[0];
+  host.authenticationType = 'key';
+  host.identityId = 'id_internal_123';
+  const text = SSHConfigSerializer.serializeHost(host);
+  expect(text).not.toContain('IdentityFile');
+  expect(text).not.toContain('id_internal_123');
+  expect(SSHConfigParser.parse(text).hosts[0].authenticationType).toBe('key');
+});
+
+it('preserves an explicitly imported IdentityFile on a config round trip', () => {
+  const host = SSHConfigParser.parse('Host demo\n  IdentityFile ~/.ssh/my_key').hosts[0];
+  expect(SSHConfigSerializer.serializeHost(host)).toContain('IdentityFile ~/.ssh/my_key');
+});

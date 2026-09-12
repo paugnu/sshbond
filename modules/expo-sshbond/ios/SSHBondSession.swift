@@ -160,12 +160,12 @@ final class SSHBondSession {
       libssh2_session_flag(session, LIBSSH2_FLAG_COMPRESS, 1)
     }
 
-    if params.keepAliveIntervalSeconds > 0 {
-      libssh2_keepalive_config(session, 1, UInt32(params.keepAliveIntervalSeconds))
-    }
-
-    guard libssh2_session_handshake(session, socketFd) == 0 else {
-      throw SSHBondError.message("Handshake failed: \(lastError(session))")
+    #if SSHBOND_DIAGNOSTIC
+    libssh2_trace(session, LIBSSH2_TRACE_KEX | LIBSSH2_TRACE_ERROR | LIBSSH2_TRACE_SOCKET)
+    #endif
+    let handshakeResult = libssh2_session_handshake(session, socketFd)
+    guard handshakeResult == 0 else {
+      throw SSHBondError.message("SSH handshake failed (\(handshakeResult)): \(lastError(session)). Authentication has not started.")
     }
 
     try gateOnHostKey(session)
@@ -174,6 +174,12 @@ final class SSHBondSession {
     events.onStatus(sessionId: params.sessionId, status: SSHStatus.authenticating)
     try authenticate(session)
     guard !isClosed else { throw SSHBondError.message("Connection cancelled.") }
+
+    // libssh2's blocking socket wait can send configured keepalives. A global
+    // request before authentication makes OpenSSH close the transport.
+    if params.keepAliveIntervalSeconds > 0 {
+      libssh2_keepalive_config(session, 1, UInt32(params.keepAliveIntervalSeconds))
+    }
 
     let channel = try openChannel(session)
     self.channel = channel

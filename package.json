@@ -15,7 +15,8 @@
     "build:terminal-assets": "node scripts/build-terminal-assets.mjs",
     "build:app-icons": "node scripts/build-app-icons.mjs",
     "verify": "npm run typecheck && npm run lint && npm test",
-    "build:license-notices": "node scripts/build-license-notices.mjs"
+    "build:license-notices": "node scripts/build-license-notices.mjs",
+    "eas-build-post-install": "bash scripts/probe-ios-handshake.sh"
   },
   "dependencies": {
     "@noble/ed25519": "^2.1.0",
