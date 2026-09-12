@@ -16,7 +16,8 @@
     "build:app-icons": "node scripts/build-app-icons.mjs",
     "verify": "npm run typecheck && npm run lint && npm test",
     "build:license-notices": "node scripts/build-license-notices.mjs",
-    "eas-build-post-install": "bash scripts/probe-ios-handshake.sh"
+    "eas-build-post-install": "if [ \"$EAS_BUILD_PLATFORM\" = ios ]; then python3 scripts/bundle-pod-notices.py; fi && bash scripts/probe-ios-handshake.sh",
+    "eas-build-on-success": "bash scripts/capture-store-simulator.sh"
   },
   "dependencies": {
     "@noble/ed25519": "^2.1.0",

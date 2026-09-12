@@ -8,6 +8,7 @@ const lock = JSON.parse(fs.readFileSync(path.join(root, 'package-lock.json'), 'u
 const entries = [];
 const missing = [];
 const seen = new Set();
+const supplements = JSON.parse(fs.readFileSync(path.join(root, 'third-party/packages/sources.json'), 'utf8'));
 for (const [relative, pkg] of Object.entries(lock.packages)) {
   if (!relative || (pkg.dev && !['node_modules/xterm', 'node_modules/xterm-addon-fit'].includes(relative))) continue;
   const dir = path.join(root, relative);
@@ -18,6 +19,11 @@ for (const [relative, pkg] of Object.entries(lock.packages)) {
   seen.add(name);
   const files = fs.readdirSync(dir).filter(f => /^(licen[cs]e|notice|copying)([.-]|$)/i.test(f) && fs.statSync(path.join(dir, f)).isFile()).sort();
   if (!files.length) {
+    const supplement = supplements.find(entry => entry.name === name);
+    if (supplement) {
+      entries.push({name, text: fs.readFileSync(path.join(root, 'third-party/packages', supplement.file), 'utf8')});
+      continue;
+    }
     const upstream = /^(expo$|expo-|babel-preset-expo$)/.test(manifest.name) ? 'Expo-SDK54' :
       manifest.name.startsWith('@react-native/') ? 'ReactNative-0.81.5' :
       /^(metro$|metro-|ob1$)/.test(manifest.name) ? 'Metro-0.83.3' : null;

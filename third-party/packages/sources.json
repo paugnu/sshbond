@@ -1,0 +1,52 @@
+[
+  {
+    "name": "react-devtools-core 6.1.5",
+    "file": "react-devtools-core-6.1.5.txt",
+    "url": "https://raw.githubusercontent.com/facebook/react/5d87cd224452c68d09bef99656b6261e9772a210/LICENSE"
+  },
+  {
+    "name": "@radix-ui/react-compose-refs 1.1.2",
+    "file": "_radix-ui_react-compose-refs-1.1.2.txt",
+    "url": "https://raw.githubusercontent.com/radix-ui/primitives/fcef0668a5c827e5a4baac405474d75680f9a4eb/LICENSE"
+  },
+  {
+    "name": "@radix-ui/react-slot 1.2.0",
+    "file": "_radix-ui_react-slot-1.2.0.txt",
+    "url": "https://raw.githubusercontent.com/radix-ui/primitives/fcef0668a5c827e5a4baac405474d75680f9a4eb/LICENSE"
+  },
+  {
+    "name": "@expo/metro-runtime 6.1.2",
+    "file": "_expo_metro-runtime-6.1.2.txt",
+    "url": "https://raw.githubusercontent.com/expo/expo/8581f7205044e7cf98b1d45b373430d6194b4939/LICENSE"
+  },
+  {
+    "name": "@expo/cli 54.0.27",
+    "file": "_expo_cli-54.0.27.txt",
+    "url": "https://raw.githubusercontent.com/expo/expo/5b42e3d21e0ac5e086752361ca8a5cb4de53bec1/LICENSE"
+  },
+  {
+    "name": "@expo/plist 0.4.9",
+    "file": "_expo_plist-0.4.9.txt",
+    "url": "https://raw.githubusercontent.com/expo/expo/45c60e10956764bbac6c62454890eeb25c74bbd6/LICENSE"
+  },
+  {
+    "name": "babel-plugin-react-compiler 1.0.0",
+    "file": "babel-plugin-react-compiler-1.0.0.txt",
+    "url": "https://raw.githubusercontent.com/facebook/react/5c15c1cd3442f28044217703b5625f98c40042ee/LICENSE"
+  },
+  {
+    "name": "imurmurhash 0.1.4",
+    "file": "imurmurhash-0.1.4.txt",
+    "source": "npm:imurmurhash@0.1.4/README.md"
+  },
+  {
+    "name": "bplist-parser 0.3.1",
+    "file": "bplist-parser-0.3.1.txt",
+    "source": "npm:bplist-parser@0.3.1/README.md"
+  },
+  {
+    "name": "stream-buffers 2.2.0",
+    "file": "stream-buffers-2.2.0.txt",
+    "source": "npm:stream-buffers@2.2.0/UNLICENSE"
+  }
+]

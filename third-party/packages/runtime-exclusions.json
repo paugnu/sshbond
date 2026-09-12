@@ -1,0 +1,19 @@
+{
+  "verified": "2026-09-12",
+  "method": "Production Hermes source maps for iOS and Android; none of these installed packages contribute a module to either native bundle.",
+  "packages": [
+    "@expo/devcert 1.2.1",
+    "@expo/sdk-runtime-versions 1.0.0",
+    "@expo/ws-tunnel 1.0.6",
+    "@expo/xcpretty 4.4.4",
+    "boolbase 1.0.0",
+    "bser 2.1.1",
+    "client-only 0.0.1",
+    "fb-watchman 2.0.2",
+    "jimp-compact 0.16.1",
+    "react-remove-scroll-bar 2.3.8",
+    "server-only 0.0.1",
+    "standard-navigation 0.0.8",
+    "structured-headers 0.4.1"
+  ]
+}

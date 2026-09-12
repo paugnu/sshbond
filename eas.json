@@ -43,7 +43,10 @@
       },
       "env": {
         "SSHBOND_HANDSHAKE_PROBE": "1"
-      }
+      },
+      "buildArtifactPaths": [
+        "output/release-evidence/**"
+      ]
     },
     "handshake-probe": {
       "extends": "development-simulator",
@@ -53,6 +56,20 @@
       "ios": {
         "image": "macos-sequoia-15.6-xcode-26.0"
       }
+    },
+    "store-screenshots": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": true,
+        "buildConfiguration": "Release",
+        "image": "macos-sequoia-15.6-xcode-26.0"
+      },
+      "env": {
+        "SSHBOND_STORE_SCREENSHOTS": "1"
+      },
+      "buildArtifactPaths": [
+        "output/release-evidence/**"
+      ]
     }
   },
   "submit": {

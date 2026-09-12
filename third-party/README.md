@@ -18,9 +18,16 @@ Additional source texts:
 - Android-* files: original notices extracted from SSHBond Android 1.0.0 (4),
   SHA-256 827b304d322140893d23db640e20048e2a35d9fd33f651d463f370277f120f62.
 
-This is an attribution inventory, not a completed audit of every native binary.
-The generator writes missing installed-package license files to
-`output/store/license-notices-missing.json` (23 entries at this revision).
-Some are build tools; remaining runtime omissions and the final Gradle/CocoaPods
-transitive dependency notices must be resolved before public release. Recheck
-native versions and notices whenever rebuilding with different dependencies.
+Supplemental npm notices are in `packages/`, with exact upstream commit URLs or
+installed-package source paths recorded in `packages/sources.json`. Ten previously
+missing entries are now covered, including the native Metro runtime and Radix
+packages. The remaining 13 installed packages do not contribute modules to either
+production native Hermes bundle, verified using both source maps on 12 September
+2026; see `packages/runtime-exclusions.json`. Recheck after dependency changes.
+
+On EAS iOS builds, `scripts/bundle-pod-notices.py` merges the resolved CocoaPods
+acknowledgements into the offline viewer after pod installation and before Metro
+bundling. Missing acknowledgements fail the build. The original plist and lockfile
+are retained as build artifacts. Android retains the original AAB notices listed
+above and the explicit JSch/Bouncy Castle notices. This inventory does not certify
+unrelated build tools or future dependency versions.
