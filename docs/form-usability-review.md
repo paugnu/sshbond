@@ -29,7 +29,8 @@
 
 ## Verificación y límites
 
-TypeScript/lint/Jest y exportación Hermes se comprueban antes de la beta.
+TypeScript y lint sin errores; Jest: 162 pruebas en 14 suites aprobadas.
+Exportación iOS/Hermes completada. Código: `6776679`.
 La geometría real del teclado de iOS, el gesto y el selector de archivos deben
 revalidarse en el iPhone con la nueva build; una exportación no los ejecuta.
 No se ha instalado un SDK Android ni un simulador local.
@@ -44,3 +45,14 @@ Referencias oficiales:
 - https://reactnative.dev/docs/scrollview
 - https://reactnative.dev/docs/keyboardavoidingview
 - https://docs.swmansion.com/react-native-gesture-handler/docs/components/reanimated_swipeable/
+
+## Beta distribuida
+
+- iOS 1.0.0 (9), compilación EAS `b91b6cfc-54fd-4e26-8268-1466ce8bf9a7` completada.
+- Envío `9aeb701e-ec65-4d1e-be2b-f5886bfcc17c` completado y distribuido al grupo existente Pruebas internas.
+- Apple confirmó por correo la disponibilidad de la build 9 el 12/09/2026 a las 06:54 CEST.
+- IPA verificado: ZIP íntegro, bundle `com.sshbond.client`, versión 1.0.0, build 9,
+  `ITSAppUsesNonExemptEncryption=false` (se conserva la distribución sin Francia).
+- SHA-256: `5ed1dcdafe82470744810348829487d8880de42040d2369905a3258d5b29ba77`.
+- La verificación de disponibilidad procede del envío EAS finalizado y el correo
+  de TestFlight; la sesión web de App Store Connect caducó durante la espera.
