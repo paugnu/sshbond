@@ -25,3 +25,16 @@ clock; they cover batching, inertia, boundaries, tap-vs-drag, multi-touch and
 background cancellation. They do not prove the feel of physical iPhone touch or
 WebKit's native gesture arbitration. Recheck on the device with a long `ls -l`,
 slow drags, flicks, top/bottom boundaries, keyboard open/closed and lock/resume.
+
+## TestFlight delivery
+
+Build 1.0.0 (12) completed and Apple confirmed processing and distribution to
+internal testers on 12 September 2026. EAS build:
+`4c0cf157-d0d0-4e49-9dd8-69a10416e537`; submission:
+`6018048e-5a38-400c-9926-a5cf6d7f5f57`.
+
+The cloud iOS native probe passed host-key verification, key authentication and
+execution of a real SSH command against the disposable OpenSSH server. The IPA
+ZIP integrity, bundle identifier and version were verified. SHA-256:
+`20aabbbcd15d866e68bb598cec63bec08c58217cf62a8b0084919b0050bbc3f6`.
+Physical-device touch feedback remains pending. No production submission was made.
