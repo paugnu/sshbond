@@ -207,5 +207,11 @@ estado. Se mantiene España disponible y Francia excluida temporalmente de iOS.
   límite febrero de 2027; planificar R8 y sus pruebas antes de ese plazo.
   Producción mantiene España y Francia. Publicación gestionada desactivada.
 - Firebase de build 6: matriz `matrix-pmktg93ditt7a`, Pixel 5 / API 30, en_US,
-  vertical, límite cinco minutos. Resultado pendiente al guardar esta entrada:
+  vertical, límite cinco minutos. Resultado **Correcta**, 1 dispositivo correcto,
+  0 con errores; 5 min 10 s, 44 acciones y 16 pantallas. Es exploración Robo,
+  no demuestra por sí sola autenticación SSH desde ART:
   https://console.firebase.google.com/project/yogabond-studio/testlab/histories/bh.edc211f887b03ef2/matrices/7199629988528755821
+- Google Play: envío de producción 1.0.0 (6) confirmado como **Cambios en revisión**,
+  con «Iniciar lanzamiento completo» y publicación gestionada desactivada. Se
+  enviará/publicará automáticamente al superar los controles y la revisión de
+  Google. No confundir este estado con disponibilidad pública ya confirmada.

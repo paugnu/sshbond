@@ -50,3 +50,19 @@ sin permiso AD_ID y segmentos ELF de las bibliotecas de 64 bits alineados a
 SHA-256: `b658ead6b8b10a098b2d70a9b88f356b95f7e3d801552bf1fcbda12a1ed1487e`.
 
 La build 5 no se ha enviado al canal cerrado ni ejecutado en Firebase todavía.
+
+## Build 6 — 12 de septiembre de 2026
+
+La build 6 final de producción se ejecutó en un Pixel 5 físico, API 30, en_US,
+vertical. Firebase informó **Correcta**, 1 dispositivo correcto y 0 con errores.
+Duración total 5 min 10 s; exploración 4 min 57 s hasta el límite establecido,
+44 acciones, 2 actividades y 16 pantallas. El límite de tiempo de exploración
+no representa un fallo de la aplicación. No se suministró un guion SSH, por lo
+que se mantiene la distinción entre Robo y las pruebas del motor contra OpenSSH.
+
+Matriz: `matrix-pmktg93ditt7a`; ejecución: `bs.8b72fe6af501cadc`.
+Informe: https://console.firebase.google.com/project/yogabond-studio/testlab/histories/bh.edc211f887b03ef2/matrices/7199629988528755821
+
+SHA-256 del AAB: `eb0038833583a6c05b42df3d9384ef5a4487e023b74d77ec8ed250ad4dd4f766`.
+Después de esta comprobación se envió la versión al canal de producción de Play;
+la consola confirmó «Cambios en revisión». Ver `publication-review.md`.
