@@ -1,5 +1,6 @@
 #!/bin/bash
 set -eu
+[[ "${EAS_BUILD_PLATFORM:-ios}" == ios ]] || exit 0
 [[ "${SSHBOND_HANDSHAKE_PROBE:-}" == 1 ]] || exit 0
 v="$PWD/modules/expo-sshbond/ios/vendor/libssh2"
 w=$(mktemp -d)

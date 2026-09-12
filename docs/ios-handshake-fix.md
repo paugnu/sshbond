@@ -48,4 +48,12 @@ pins its generated host fingerprint, authenticates, and checks command output.
 rejects the host key and sends no credentials. Routine builds do not depend on
 any production server. No Android SDK is installed locally.
 
-Availability and final native test outcome are recorded after the build finishes.
+The corrected native test passed in build 10 (EAS
+`a5b4e68e-7ee3-4cf2-b27d-7063e1122476`): external handshake reached host-key
+verification; the disposable server accepted the pinned host key and test client
+key; the remote command returned `SSHBOND_PROBE_OK` and closed normally.
+The external check deliberately rejected the presented key before authentication.
+This proves the transport fix on iOS simulator with real SSH endpoints, not a
+physical-iPhone run or authentication with the user's production key.
+
+TestFlight availability is recorded after processing finishes.
