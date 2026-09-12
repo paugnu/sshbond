@@ -56,4 +56,17 @@ The external check deliberately rejected the presented key before authentication
 This proves the transport fix on iOS simulator with real SSH endpoints, not a
 physical-iPhone run or authentication with the user's production key.
 
-TestFlight availability is recorded after processing finishes.
+## Distribution
+
+Build 1.0.0 (10) completed and was distributed to the existing internal testers.
+EAS submission: `f4039dba-0df2-42fd-a4c2-f71fa4b6e5cb`.
+Apple availability email received 12 September 2026 at 08:12 CEST.
+IPA verified: ZIP integrity, bundle `com.sshbond.client`, version 1.0.0, build 10,
+and existing export setting `ITSAppUsesNonExemptEncryption=false`.
+SHA-256: `fd0e76f442bee149c97172a3195594163aaf064f15ae2e3694b99b803d967243`.
+
+Build 10 additionally ran the temporary baseline C probes and external handshake
+against the reported host. The committed harness retains the actual Swift
+regression test; future routine builds use only the disposable local SSH server.
+The iPhone retry with the user's existing production key remains the final
+on-device confirmation.
