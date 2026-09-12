@@ -22,10 +22,6 @@ while IFS=$'\t' read -r label udid; do
   xcrun simctl launch "$udid" com.sshbond.client
   sleep 8
   xcrun simctl io "$udid" screenshot "$out/$label-hosts.png"
-  xcrun simctl openurl "$udid" sshbond://keys
-  sleep 3
-  xcrun simctl io "$udid" screenshot "$out/$label-keys.png"
-  xcrun simctl openurl "$udid" sshbond://settings
-  sleep 3
-  xcrun simctl io "$udid" screenshot "$out/$label-settings.png"
+  # simctl openurl shows an OS confirmation dialog; additional screens need
+  # UI-driven navigation and visual verification before use in the store.
 done < "$out/capture-devices.tsv"
